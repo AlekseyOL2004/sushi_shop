@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
+    "dev": "nodemon --config nodemon.json",
     "dev:local": "NODE_ENV=development nodemon src/app.local.js",
     "prod:local": "NODE_ENV=production node src/app.local.js"
   },
@@ -13,11 +13,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "mongoose": "^7.2.3",
-    "dotenv": "^16.3.1",
-    "validator": "^13.9.0",
-    "cors": "^2.8.5"
+    "validator": "^13.9.0"
   },
   "devDependencies": {
     "mongodb-memory-server": "^10.2.3",
