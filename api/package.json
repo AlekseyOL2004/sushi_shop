@@ -1,0 +1,26 @@
+{
+  "name": "Docker NodeJS App",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "dev:local": "NODE_ENV=development nodemon src/app.local.js",
+    "prod:local": "NODE_ENV=production node src/app.local.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.2.3",
+    "dotenv": "^16.3.1",
+    "validator": "^13.9.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.2.3",
+    "nodemon": "^3.1.10"
+  }
+}

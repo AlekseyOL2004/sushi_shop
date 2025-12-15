@@ -1,0 +1,39 @@
+
+services:
+  api:
+    container_name: api_prod
+    build:
+      context: ./api
+      args:
+        NODE_IMAGE: node:22-bullseye-slim
+    command: npm start
+    ports:
+      - '3001:3001'
+    environment:
+      - PORT=3001
+      - HOST=0.0.0.0
+      - MONGO_URL=mongodb://api_db:27017/api
+    depends_on:
+      - api_db
+
+  frontend:
+    container_name: frontend_prod
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        NODE_IMAGE: node:22-bullseye-slim
+    command: serve -s build -l 3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+
+  api_db:
+    container_name: api_db_prod
+    image: mongo:latest
+    volumes:
+      - mongodb_api:/data/db
+
+volumes:
+  mongodb_api:
