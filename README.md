@@ -8,11 +8,12 @@
 ![Docker](https://img.shields.io/badge/Docker-%20-blue)
 ![Frontend Deploy](https://github.com/victorchei/ztu-docker-lr-4/actions/workflows/deploy-frontend-azure.yml/badge.svg?branch=frontend)
 
-| Компонент | Мова / Фреймворк        | Основні бібліотеки / інструменти                                                 | Коротко                                                                             |
-| --------- | ----------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| API       | Node.js / Express       | express, mongoose, dotenv, validator; mongodb-memory-server (dev), nodemon (dev) | Сервер у `api/src`, локальний запуск через `app.local.js` підтримує in-memory Mongo |
-| Frontend  | React 18 / Vite         | react, react-dom, vite, @vitejs/plugin-react; `serve`/`npx serve` для проду      | Клієнт у `frontend/src`, Vite для dev, збірка у `frontend/build`                    |
-| DevOps    | Docker / Docker Compose | Dockerfile(.dev/.prod), docker-compose.yml, docker-compose.dev.yml               | Прод: frontend 3000 / api 3001, Dev: frontend 3003 / api 3002                       |
+| Компонент | Мова / Фреймворк        | Основні бібліотеки / інструменти                                                 | Коротко                                                                                            |
+| --------- | ----------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| API       | Node.js / Express       | express, mongoose, dotenv, validator; mongodb-memory-server (dev), nodemon (dev) | Сервер у `api/src`, локальний запуск через `app.local.js` підтримує in-memory Mongo                |
+| Frontend  | React 18 / Vite         | react, react-dom, react-router-dom, vite, @vitejs/plugin-react                   | Клієнт у `frontend/src`, Vite для dev, збірка у `frontend/build`, маршрутизація через React Router |
+| DevOps    | Docker / Docker Compose | Dockerfile(.dev/.prod), docker-compose.yml, docker-compose.dev.yml               | Прод: frontend 3000 / api 3001, Dev: frontend 3003 / api 3002                                      |
+| Database  | MongoDB                 | mongo:latest                                                                     | NoSQL база даних на порту 27017                                                                    |
 
 README узагальнює поточні налаштування проекту: Dockerfile-и, docker-compose для продакшену та розробки, локальний запуск без Docker (включно з in-memory Mongo), а також `.env.local` для демонстрацій.
 
@@ -210,7 +211,7 @@ docker compose build --build-arg NODE_IMAGE=node:22-bullseye-slim
 1. Створіть `docker-compose.yml` з таким вмістом (production):
 
 ```yaml
-version: '3'
+version: "3"
 services:
   api:
     container_name: api_prod
@@ -220,7 +221,7 @@ services:
         NODE_IMAGE: node:22-bullseye-slim
     command: npm start
     ports:
-      - '3001:3001'
+      - "3001:3001"
     environment:
       - PORT=3001
       - HOST=0.0.0.0
@@ -237,7 +238,7 @@ services:
         NODE_IMAGE: node:22-bullseye-slim
     command: serve -s build -l 3000
     ports:
-      - '3000:3000'
+      - "3000:3000"
     depends_on:
       - api
 
@@ -254,7 +255,7 @@ volumes:
 2. Створіть `docker-compose.dev.yml` з цим вмістом (development):
 
 ```yaml
-version: '3'
+version: "3"
 services:
   api:
     container_name: api_dev
@@ -265,7 +266,7 @@ services:
         NODE_IMAGE: node:22-bullseye-slim
     command: npm run dev
     ports:
-      - '3002:3001' # dev API доступний на хості 3002
+      - "3002:3001" # dev API доступний на хості 3002
     environment:
       - PORT=3001
       - HOST=0.0.0.0
@@ -284,7 +285,7 @@ services:
         NODE_IMAGE: node:22-bullseye-slim
     command: npm start
     ports:
-      - '3003:3000' # dev frontend доступний на хості 3003
+      - "3003:3000" # dev frontend доступний на хості 3003
     environment:
       - VITE_API_BASE=${VITE_API_BASE:-http://localhost:3002}
     volumes:

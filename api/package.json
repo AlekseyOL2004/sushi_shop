@@ -7,7 +7,11 @@
     "start": "node src/app.js",
     "dev": "nodemon --config nodemon.json",
     "dev:local": "NODE_ENV=development nodemon src/app.local.js",
-    "prod:local": "NODE_ENV=production node src/app.local.js"
+    "prod:local": "NODE_ENV=production node src/app.local.js",
+    "create:admin": "node src/createAdmin.js",
+    "update:users": "node src/updateExistingUsers.js",
+    "fix:users": "node src/fixUsers.js",
+    "seed": "node src/seedData.js"
   },
   "keywords": [],
   "author": "",

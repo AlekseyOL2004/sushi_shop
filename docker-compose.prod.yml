@@ -1,0 +1,18 @@
+services:
+  api_db:
+    container_name: api_db_prod
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=securePassword123
+    volumes:
+      - mongodb_api_prod:/data/db
+    ports:
+      - '27017:27017'
+
+  api:
+    container_name: api_prod
+    environment:
+      - MONGO_URL=mongodb://admin:securePassword123@api_db:27017/api?authSource=admin
+    depends_on:
+      - api_db

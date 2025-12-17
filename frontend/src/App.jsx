@@ -1,17 +1,24 @@
-import { useState } from 'react';
-import UserForm from './components/UserForm';
-import UsersList from './components/UsersList';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import SushiShop from "./components/SushiShop";
+import Registration from "./pages/Registration";
+import Menu from "./pages/Menu";
+import AdminPanel from "./pages/AdminPanel";
+import Login from "./pages/Login";
+import Profile from "./pages/Profile";
+import UserProfile from "./pages/UserProfile";
 
 export default function App() {
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const triggerRefresh = () => setRefreshKey((k) => k + 1);
-
   return (
-    <div className='app-container'>
-      <h1>Users ++</h1>
-      <UserForm onCreated={triggerRefresh} />
-      <UsersList refreshKey={refreshKey} />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<SushiShop />} />
+        <Route path="/registration" element={<Registration />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/menu" element={<Menu />} />
+        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:userId" element={<UserProfile />} />
+      </Routes>
+    </Router>
   );
 }
