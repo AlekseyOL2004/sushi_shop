@@ -2,9 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const userRouter = require("./routers/user");
+const menuRouter = require("./routers/menu");
 const orderRouter = require("./routers/order");
-const menuItemRouter = require("./routers/menuItem");
 const reviewRouter = require("./routers/review");
+const categoryRouter = require("./routers/category");
 const statisticsRouter = require("./routers/statistics");
 const { port, host, mongoURL } = require("./configuration/index");
 
@@ -27,9 +28,10 @@ app.get("/health", (req, res) => {
 
 // Routes
 app.use("/users", userRouter);
+app.use("/menu", menuRouter);
 app.use("/orders", orderRouter);
-app.use("/menu", menuItemRouter);
 app.use("/reviews", reviewRouter);
+app.use("/categories", categoryRouter);
 app.use("/statistics", statisticsRouter);
 
 // 404 handler

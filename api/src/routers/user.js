@@ -215,7 +215,11 @@ router.patch("/:id/role", async (req, res) => {
 // Деактивувати/активувати користувача
 router.patch("/:id/status", async (req, res) => {
   try {
-    const { isActive, adminId, adminPassword } = req.body;
+    const { adminId, adminPassword } = req.body;
+
+    console.log("=== TOGGLE STATUS REQUEST ===");
+    console.log("Target user ID:", req.params.id);
+    console.log("Admin ID:", adminId);
 
     if (!adminId || !adminPassword) {
       return res.status(400).json({ message: "Admin credentials required" });
@@ -240,14 +244,20 @@ router.patch("/:id/status", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.isActive = isActive;
+    // Toggle status - перемикання поточного статусу
+    const newStatus = !user.isActive;
+    console.log(
+      `Changing user ${user.email} status from ${user.isActive} to ${newStatus}`
+    );
+
+    user.isActive = newStatus;
     await user.save();
 
     const userResponse = user.toObject();
     delete userResponse.password;
 
     console.log(
-      `✅ Admin ${admin.email} ${isActive ? "activated" : "deactivated"} ${
+      `✅ Admin ${admin.email} ${newStatus ? "activated" : "deactivated"} ${
         user.email
       }`
     );

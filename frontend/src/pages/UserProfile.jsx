@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Header from "../components/Header";
 import "./Profile.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
@@ -212,245 +213,257 @@ export default function UserProfile() {
   if (!targetUser) return <div className="loading">Завантаження...</div>;
 
   return (
-    <div className="profile-container">
-      <div className="profile-card">
-        <header className="profile-header">
-          <button onClick={() => navigate("/admin")} className="back-btn">
-            ← Назад до адмін-панелі
-          </button>
-          <h1>Профіль користувача</h1>
-        </header>
+    <div className="profile-page">
+      <Header />
 
-        {successMessage && (
-          <div className="success-message">✅ {successMessage}</div>
-        )}
+      <div className="profile-container">
+        <div className="profile-card">
+          <header className="profile-header-sub">
+            <button onClick={() => navigate("/admin")} className="back-btn-sub">
+              ← Назад до адмін-панелі
+            </button>
+            <h1>Профіль користувача</h1>
+          </header>
 
-        {isEditing && (
-          <div className="edit-mode-banner">
-            📝 Режим редагування: внесіть зміни та натисніть "Оновити дані"
-          </div>
-        )}
-
-        <div className="profile-info">
-          <div className="user-badge">
-            <div className="avatar">
-              {targetUser.firstName?.[0]}
-              {targetUser.lastName?.[0]}
-            </div>
-            <div>
-              <h2>
-                {targetUser.firstName} {targetUser.lastName}
-              </h2>
-              <span
-                className="role-badge"
-                style={{ backgroundColor: ROLES[targetUser.role]?.color }}
-              >
-                {ROLES[targetUser.role]?.label}
-              </span>
-              <span
-                className={`status-badge ${
-                  targetUser.isActive ? "active" : "inactive"
-                }`}
-              >
-                {targetUser.isActive ? "Активний" : "Неактивний"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="profile-form">
-          {/* Debug панель */}
-          <div
-            style={{
-              background: isEditing ? "#d4edda" : "#f8d7da",
-              color: isEditing ? "#155724" : "#721c24",
-              padding: "15px",
-              marginBottom: "15px",
-              borderRadius: "8px",
-              border: `2px solid ${isEditing ? "#28a745" : "#dc3545"}`,
-            }}
-          >
-            <div>
-              🔍 РЕЖИМ:{" "}
-              <strong>{isEditing ? "РЕДАГУВАННЯ" : "ПЕРЕГЛЯД"}</strong>
-            </div>
-            <div>
-              Статус полів:{" "}
-              <strong>
-                {isEditing ? "🔓 РОЗБЛОКОВАНО" : "🔒 ЗАБЛОКОВАНО"}
-              </strong>
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>Прізвище *</label>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                disabled={!isEditing}
-                style={{
-                  background: isEditing ? "white" : "#f7fafc",
-                  border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-                }}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Ім'я *</label>
-              <input
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                disabled={!isEditing}
-                style={{
-                  background: isEditing ? "white" : "#f7fafc",
-                  border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>По батькові</label>
-            <input
-              type="text"
-              name="middleName"
-              value={formData.middleName}
-              onChange={handleChange}
-              disabled={!isEditing}
-              style={{
-                background: isEditing ? "white" : "#f7fafc",
-                border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-              }}
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>Телефон</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                disabled={!isEditing}
-                style={{
-                  background: isEditing ? "white" : "#f7fafc",
-                  border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-                }}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Email *</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                disabled={!isEditing}
-                style={{
-                  background: isEditing ? "white" : "#f7fafc",
-                  border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Адреса</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              disabled={!isEditing}
-              style={{
-                background: isEditing ? "white" : "#f7fafc",
-                border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-              }}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Дата народження</label>
-            <input
-              type="date"
-              name="birthDate"
-              value={formData.birthDate}
-              onChange={handleChange}
-              disabled={!isEditing}
-              style={{
-                background: isEditing ? "white" : "#f7fafc",
-                border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-              }}
-            />
-          </div>
+          {successMessage && (
+            <div className="success-message">✅ {successMessage}</div>
+          )}
 
           {isEditing && (
-            <div className="password-section">
-              <h4>Зміна пароля (необов'язково)</h4>
-              <div className="form-group">
-                <label>Новий пароль</label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Підтвердження пароля</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-              </div>
+            <div className="edit-mode-banner">
+              📝 Режим редагування: внесіть зміни та натисніть "Оновити дані"
             </div>
           )}
 
-          {errors.general && (
-            <div
-              className={
-                errors.general.includes("не були змінені")
-                  ? "warning-message"
-                  : "error-message"
-              }
-            >
-              {errors.general.includes("не були змінені") ? "⚠️" : "❌"}{" "}
-              {errors.general}
-            </div>
-          )}
-
-          <div className="form-actions">
-            {isEditing ? (
-              <>
-                <button type="submit" className="save-btn" disabled={loading}>
-                  {loading ? "⏳ Збереження..." : "💾 Оновити дані"}
-                </button>
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={handleCancel}
-                  disabled={loading}
+          <div className="profile-info">
+            <div className="user-badge">
+              <div className="avatar">
+                {targetUser.firstName?.[0]}
+                {targetUser.lastName?.[0]}
+              </div>
+              <div>
+                <h2>
+                  {targetUser.firstName} {targetUser.lastName}
+                </h2>
+                <span
+                  className="role-badge"
+                  style={{ backgroundColor: ROLES[targetUser.role]?.color }}
                 >
-                  ❌ Скасувати
-                </button>
-              </>
-            ) : (
-              <button type="button" className="edit-btn" onClick={handleEdit}>
-                ✏️ Редагувати профіль
-              </button>
-            )}
+                  {ROLES[targetUser.role]?.label}
+                </span>
+                <span
+                  className={`status-badge ${
+                    targetUser.isActive ? "active" : "inactive"
+                  }`}
+                >
+                  {targetUser.isActive ? "Активний" : "Неактивний"}
+                </span>
+              </div>
+            </div>
           </div>
-        </form>
+
+          <form onSubmit={handleSubmit} className="profile-form">
+            {/* Debug панель */}
+            <div
+              style={{
+                background: isEditing ? "#d4edda" : "#f8d7da",
+                color: isEditing ? "#155724" : "#721c24",
+                padding: "15px",
+                marginBottom: "15px",
+                borderRadius: "8px",
+                border: `2px solid ${isEditing ? "#28a745" : "#dc3545"}`,
+              }}
+            >
+              <div>
+                🔍 РЕЖИМ:{" "}
+                <strong>{isEditing ? "РЕДАГУВАННЯ" : "ПЕРЕГЛЯД"}</strong>
+              </div>
+              <div>
+                Статус полів:{" "}
+                <strong>
+                  {isEditing ? "🔓 РОЗБЛОКОВАНО" : "🔒 ЗАБЛОКОВАНО"}
+                </strong>
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Прізвище *</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  style={{
+                    background: isEditing ? "white" : "#f7fafc",
+                    border: isEditing
+                      ? "2px solid #667eea"
+                      : "2px solid #e2e8f0",
+                  }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Ім'я *</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  style={{
+                    background: isEditing ? "white" : "#f7fafc",
+                    border: isEditing
+                      ? "2px solid #667eea"
+                      : "2px solid #e2e8f0",
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>По батькові</label>
+              <input
+                type="text"
+                name="middleName"
+                value={formData.middleName}
+                onChange={handleChange}
+                disabled={!isEditing}
+                style={{
+                  background: isEditing ? "white" : "#f7fafc",
+                  border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
+                }}
+              />
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Телефон</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  style={{
+                    background: isEditing ? "white" : "#f7fafc",
+                    border: isEditing
+                      ? "2px solid #667eea"
+                      : "2px solid #e2e8f0",
+                  }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Email *</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  style={{
+                    background: isEditing ? "white" : "#f7fafc",
+                    border: isEditing
+                      ? "2px solid #667eea"
+                      : "2px solid #e2e8f0",
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Адреса</label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                disabled={!isEditing}
+                style={{
+                  background: isEditing ? "white" : "#f7fafc",
+                  border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
+                }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Дата народження</label>
+              <input
+                type="date"
+                name="birthDate"
+                value={formData.birthDate}
+                onChange={handleChange}
+                disabled={!isEditing}
+                style={{
+                  background: isEditing ? "white" : "#f7fafc",
+                  border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
+                }}
+              />
+            </div>
+
+            {isEditing && (
+              <div className="password-section">
+                <h4>Зміна пароля (необов'язково)</h4>
+                <div className="form-group">
+                  <label>Новий пароль</label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Підтвердження пароля</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+            )}
+
+            {errors.general && (
+              <div
+                className={
+                  errors.general.includes("не були змінені")
+                    ? "warning-message"
+                    : "error-message"
+                }
+              >
+                {errors.general.includes("не були змінені") ? "⚠️" : "❌"}{" "}
+                {errors.general}
+              </div>
+            )}
+
+            <div className="form-actions">
+              {isEditing ? (
+                <>
+                  <button type="submit" className="save-btn" disabled={loading}>
+                    {loading ? "⏳ Збереження..." : "💾 Оновити дані"}
+                  </button>
+                  <button
+                    type="button"
+                    className="cancel-btn"
+                    onClick={handleCancel}
+                    disabled={loading}
+                  >
+                    ❌ Скасувати
+                  </button>
+                </>
+              ) : (
+                <button type="button" className="edit-btn" onClick={handleEdit}>
+                  ✏️ Редагувати профіль
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

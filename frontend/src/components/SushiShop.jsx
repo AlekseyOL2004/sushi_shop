@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Header from "./Header";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
@@ -105,331 +106,112 @@ export default function SushiShop() {
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", color: "#333" }}>
-      {/* Header */}
-      <header
-        style={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          color: "white",
-          padding: "1rem 2rem",
-          position: "sticky",
-          top: 0,
-          zIndex: 1000,
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-        }}
-      >
-        <nav
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            maxWidth: "1200px",
-            margin: "0 auto",
-          }}
-        >
-          <h1 style={{ margin: 0, fontSize: "1.8rem", fontWeight: "bold" }}>
-            🍱 Roll & Go
-          </h1>
-          <ul
-            style={{
-              display: "flex",
-              gap: "2rem",
-              listStyle: "none",
-              margin: 0,
-              padding: 0,
-              alignItems: "center",
-            }}
-          >
-            <li
-              onClick={() => navigate("/menu")}
-              style={{
-                color: "white",
-                cursor: "pointer",
-                fontWeight: "500",
-              }}
-            >
-              Меню
-            </li>
-            <li>
-              <a
-                href="#delivery"
-                style={{
-                  color: "white",
-                  textDecoration: "none",
-                  fontWeight: "500",
-                }}
-              >
-                Доставка
-              </a>
-            </li>
-            <li>
-              <a
-                href="#reviews"
-                style={{
-                  color: "white",
-                  textDecoration: "none",
-                  fontWeight: "500",
-                }}
-              >
-                Відгуки
-              </a>
-            </li>
-            {currentUser ? (
-              <>
-                <li
-                  onClick={() => navigate("/profile")}
-                  style={{
-                    color: "white",
-                    fontWeight: "500",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    cursor: "pointer",
-                  }}
-                >
-                  👤 {currentUser.firstName}
-                </li>
-                {currentUser.role === "admin" && (
-                  <li
-                    onClick={() => navigate("/admin")}
-                    style={{
-                      color: "white",
-                      cursor: "pointer",
-                      fontWeight: "500",
-                    }}
-                  >
-                    🔧 Адмін
-                  </li>
-                )}
-                <li
-                  onClick={handleLogout}
-                  style={{
-                    background: "rgba(229, 62, 62, 0.3)",
-                    padding: "0.5rem 1rem",
-                    borderRadius: "25px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    border: "1px solid rgba(255, 255, 255, 0.3)",
-                    transition: "background 0.3s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(229, 62, 62, 0.5)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "rgba(229, 62, 62, 0.3)";
-                  }}
-                >
-                  🚪 Вийти
-                </li>
-              </>
-            ) : (
-              <>
-                <li
-                  onClick={() => navigate("/login")}
-                  style={{
-                    color: "white",
-                    cursor: "pointer",
-                    fontWeight: "500",
-                  }}
-                >
-                  Вхід
-                </li>
-                <li
-                  onClick={() => navigate("/registration")}
-                  style={{
-                    color: "white",
-                    cursor: "pointer",
-                    fontWeight: "500",
-                  }}
-                >
-                  Реєстрація
-                </li>
-              </>
-            )}
-            <li
-              onClick={() => setShowCheckout(true)}
-              style={{
-                background: "#ff6b6b",
-                padding: "0.5rem 1rem",
-                borderRadius: "25px",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-            >
-              🛒 Кошик ({cart.length}) - {getTotalPrice()}₴
-            </li>
-          </ul>
-        </nav>
-      </header>
+      <Header cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} />
 
       {/* Checkout Modal */}
       {showCheckout && (
         <div
           style={{
             position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+            inset: 0,
             background: "rgba(0,0,0,0.7)",
-            zIndex: 2000,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            zIndex: 10000,
           }}
+          onClick={() => setShowCheckout(false)}
         >
           <div
             style={{
               background: "white",
               padding: "2rem",
               borderRadius: "15px",
-              maxWidth: "600px",
+              maxWidth: "500px",
               width: "90%",
-              maxHeight: "90vh",
+              maxHeight: "80vh",
               overflow: "auto",
             }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ marginTop: 0 }}>Оформлення замовлення</h3>
-
-            {orderSuccess ? (
-              <div style={{ textAlign: "center", padding: "2rem" }}>
-                <div style={{ fontSize: "4rem" }}>✅</div>
-                <h4>Замовлення успішно оформлено!</h4>
-                <p>Очікуйте дзвінка оператора</p>
-              </div>
+            <h2 style={{ marginTop: 0, color: "#667eea" }}>🛒 Ваш кошик</h2>
+            {cart.length === 0 ? (
+              <p
+                style={{ textAlign: "center", color: "#999", padding: "2rem" }}
+              >
+                Кошик порожній
+              </p>
             ) : (
               <>
-                <div style={{ marginBottom: "1rem" }}>
-                  <h4>Ваше замовлення:</h4>
-                  {cart.map((item) => (
-                    <div
-                      key={item.id}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        padding: "0.5rem",
-                        borderBottom: "1px solid #eee",
-                      }}
-                    >
-                      <span>
-                        {item.name} x{item.quantity}
-                      </span>
-                      <span>
-                        {item.price * item.quantity}₴{" "}
-                        <button
-                          onClick={() => removeFromCart(item.id)}
-                          style={{
-                            marginLeft: "10px",
-                            color: "red",
-                            cursor: "pointer",
-                          }}
-                        >
-                          ❌
-                        </button>
-                      </span>
-                    </div>
-                  ))}
+                {cart.map((item) => (
                   <div
+                    key={item._id}
                     style={{
-                      fontWeight: "bold",
-                      marginTop: "1rem",
-                      fontSize: "1.2rem",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "1rem",
+                      borderBottom: "1px solid #eee",
                     }}
                   >
-                    Всього: {getTotalPrice()}₴
+                    <div>
+                      <strong>{item.name}</strong>
+                      <div style={{ color: "#666", fontSize: "0.9rem" }}>
+                        {item.price}₴ × {item.quantity}
+                      </div>
+                    </div>
+                    <div style={{ fontWeight: "bold", color: "#667eea" }}>
+                      {item.price * item.quantity}₴
+                    </div>
                   </div>
+                ))}
+                <div
+                  style={{
+                    padding: "1rem",
+                    fontSize: "1.2rem",
+                    fontWeight: "bold",
+                    textAlign: "right",
+                    color: "#667eea",
+                  }}
+                >
+                  Всього: {getTotalPrice()}₴
                 </div>
-
-                <form onSubmit={handleOrder}>
-                  <input
-                    type="text"
-                    placeholder="Ваше ім'я"
-                    required
-                    value={customerInfo.name}
-                    onChange={(e) =>
-                      setCustomerInfo({ ...customerInfo, name: e.target.value })
-                    }
-                    style={{
-                      width: "100%",
-                      padding: "0.7rem",
-                      marginBottom: "1rem",
-                      border: "1px solid #ddd",
-                      borderRadius: "5px",
-                    }}
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Телефон"
-                    required
-                    value={customerInfo.phone}
-                    onChange={(e) =>
-                      setCustomerInfo({
-                        ...customerInfo,
-                        phone: e.target.value,
-                      })
-                    }
-                    style={{
-                      width: "100%",
-                      padding: "0.7rem",
-                      marginBottom: "1rem",
-                      border: "1px solid #ddd",
-                      borderRadius: "5px",
-                    }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Адреса доставки"
-                    required
-                    value={customerInfo.address}
-                    onChange={(e) =>
-                      setCustomerInfo({
-                        ...customerInfo,
-                        address: e.target.value,
-                      })
-                    }
-                    style={{
-                      width: "100%",
-                      padding: "0.7rem",
-                      marginBottom: "1rem",
-                      border: "1px solid #ddd",
-                      borderRadius: "5px",
-                    }}
-                  />
-
-                  <div style={{ display: "flex", gap: "1rem" }}>
-                    <button
-                      type="submit"
-                      style={{
-                        flex: 1,
-                        padding: "1rem",
-                        background: "#48bb78",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Оформити замовлення
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowCheckout(false)}
-                      style={{
-                        flex: 1,
-                        padding: "1rem",
-                        background: "#e53e3e",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Скасувати
-                    </button>
-                  </div>
-                </form>
+                <button
+                  style={{
+                    width: "100%",
+                    padding: "1rem",
+                    background: "#48bb78",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "1.1rem",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    marginTop: "1rem",
+                  }}
+                  onClick={() => alert("Замовлення оформлено!")}
+                >
+                  Оформити замовлення
+                </button>
               </>
             )}
+            <button
+              style={{
+                width: "100%",
+                padding: "0.8rem",
+                background: "#e2e8f0",
+                color: "#2d3748",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "1rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                marginTop: "1rem",
+              }}
+              onClick={() => setShowCheckout(false)}
+            >
+              Закрити
+            </button>
           </div>
         </div>
       )}
@@ -464,6 +246,7 @@ export default function SushiShop() {
           </p>
           <div style={{ fontSize: "5rem", margin: "1rem 0" }}>🍣🍱🥢</div>
           <button
+            onClick={() => navigate("/menu")}
             style={{
               background: "#ff6b6b",
               color: "white",

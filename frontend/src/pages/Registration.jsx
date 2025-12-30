@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Header from "../components/Header";
 import "./Registration.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
@@ -94,133 +95,139 @@ export default function Registration() {
   };
 
   return (
-    <div className="registration-container">
-      <div className="registration-card">
-        <h1>Реєстрація</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Прізвище *</label>
-            <input
-              type="text"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-            />
-            {errors.lastName && (
-              <span className="error">{errors.lastName}</span>
-            )}
-          </div>
+    <div style={{ minHeight: "100vh", background: "#f5f7fa" }}>
+      <Header />
 
-          <div className="form-group">
-            <label>Ім'я *</label>
-            <input
-              type="text"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-            />
-            {errors.firstName && (
-              <span className="error">{errors.firstName}</span>
-            )}
-          </div>
+      <div className="registration-container">
+        <div className="registration-card">
+          <h1>Реєстрація</h1>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Прізвище *</label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+              />
+              {errors.lastName && (
+                <span className="error">{errors.lastName}</span>
+              )}
+            </div>
 
-          <div className="form-group">
-            <label>По батькові *</label>
-            <input
-              type="text"
-              name="middleName"
-              value={formData.middleName}
-              onChange={handleChange}
-            />
-            {errors.middleName && (
-              <span className="error">{errors.middleName}</span>
-            )}
-          </div>
+            <div className="form-group">
+              <label>Ім'я *</label>
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+              />
+              {errors.firstName && (
+                <span className="error">{errors.firstName}</span>
+              )}
+            </div>
 
-          <div className="form-group">
-            <label>Номер телефону *</label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="+380XXXXXXXXX"
-            />
-            {errors.phone && <span className="error">{errors.phone}</span>}
-          </div>
+            <div className="form-group">
+              <label>По батькові *</label>
+              <input
+                type="text"
+                name="middleName"
+                value={formData.middleName}
+                onChange={handleChange}
+              />
+              {errors.middleName && (
+                <span className="error">{errors.middleName}</span>
+              )}
+            </div>
 
-          <div className="form-group">
-            <label>Електронна пошта *</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-            />
-            {errors.email && <span className="error">{errors.email}</span>}
-          </div>
+            <div className="form-group">
+              <label>Номер телефону *</label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="+380XXXXXXXXX"
+              />
+              {errors.phone && <span className="error">{errors.phone}</span>}
+            </div>
 
-          <div className="form-group">
-            <label>Адреса доставки *</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-            />
-            {errors.address && <span className="error">{errors.address}</span>}
-          </div>
+            <div className="form-group">
+              <label>Електронна пошта *</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+              {errors.email && <span className="error">{errors.email}</span>}
+            </div>
 
-          <div className="form-group">
-            <label>Дата народження *</label>
-            <input
-              type="date"
-              name="birthDate"
-              value={formData.birthDate}
-              onChange={handleChange}
-            />
-            {errors.birthDate && (
-              <span className="error">{errors.birthDate}</span>
-            )}
-          </div>
+            <div className="form-group">
+              <label>Адреса доставки *</label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+              />
+              {errors.address && (
+                <span className="error">{errors.address}</span>
+              )}
+            </div>
 
-          <div className="form-group">
-            <label>Пароль *</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-            />
-            {errors.password && (
-              <span className="error">{errors.password}</span>
-            )}
-          </div>
+            <div className="form-group">
+              <label>Дата народження *</label>
+              <input
+                type="date"
+                name="birthDate"
+                value={formData.birthDate}
+                onChange={handleChange}
+              />
+              {errors.birthDate && (
+                <span className="error">{errors.birthDate}</span>
+              )}
+            </div>
 
-          <div className="form-group">
-            <label>Підтвердження пароля *</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
-            {errors.confirmPassword && (
-              <span className="error">{errors.confirmPassword}</span>
-            )}
-          </div>
+            <div className="form-group">
+              <label>Пароль *</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+              {errors.password && (
+                <span className="error">{errors.password}</span>
+              )}
+            </div>
 
-          <button type="submit" className="submit-btn">
-            Зареєструватися
-          </button>
-          <button
-            type="button"
-            className="back-btn"
-            onClick={() => navigate("/")}
-          >
-            Повернутись на головну
-          </button>
-        </form>
+            <div className="form-group">
+              <label>Підтвердження пароля *</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
+              {errors.confirmPassword && (
+                <span className="error">{errors.confirmPassword}</span>
+              )}
+            </div>
+
+            <button type="submit" className="submit-btn">
+              Зареєструватися
+            </button>
+            <button
+              type="button"
+              className="back-btn"
+              onClick={() => navigate("/")}
+            >
+              Повернутись на головну
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

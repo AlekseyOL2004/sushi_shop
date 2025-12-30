@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Header from "../components/Header";
 import "./Login.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
@@ -56,64 +57,68 @@ export default function Login() {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h1>Вхід</h1>
-        <p className="subtitle">Введіть свої дані для входу в систему</p>
+    <div style={{ minHeight: "100vh", background: "#f5f7fa" }}>
+      <Header />
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="example@email.com"
-              required
-            />
-          </div>
+      <div className="login-container">
+        <div className="login-card">
+          <h1>Вхід</h1>
+          <p className="subtitle">Введіть свої дані для входу в систему</p>
 
-          <div className="form-group">
-            <label>Пароль</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          {error && (
-            <div className="error-message">
-              <span className="error-icon">⚠️</span>
-              {error}
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="example@email.com"
+                required
+              />
             </div>
-          )}
 
-          <button type="submit" className="login-btn" disabled={loading}>
-            {loading ? "Вхід..." : "Увійти"}
-          </button>
+            <div className="form-group">
+              <label>Пароль</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+              />
+            </div>
 
-          <div className="links">
-            <button
-              type="button"
-              onClick={() => navigate("/registration")}
-              className="link-btn"
-            >
-              Немає акаунту? Зареєструватися
+            {error && (
+              <div className="error-message">
+                <span className="error-icon">⚠️</span>
+                {error}
+              </div>
+            )}
+
+            <button type="submit" className="login-btn" disabled={loading}>
+              {loading ? "Вхід..." : "Увійти"}
             </button>
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-              className="link-btn"
-            >
-              Повернутись на головну
-            </button>
-          </div>
-        </form>
+
+            <div className="links">
+              <button
+                type="button"
+                onClick={() => navigate("/registration")}
+                className="link-btn"
+              >
+                Немає акаунту? Зареєструватися
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="link-btn"
+              >
+                Повернутись на головну
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

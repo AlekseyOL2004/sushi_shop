@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Header from "../components/Header";
 import "./Profile.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
@@ -240,278 +241,262 @@ export default function Profile() {
   if (!currentUser) return <div className="loading">Завантаження...</div>;
 
   return (
-    <div className="profile-container">
-      <div className="profile-card">
-        <header className="profile-header">
-          <button onClick={() => navigate("/")} className="back-btn">
-            ← Назад на головну
-          </button>
-          <h1>Мій профіль</h1>
-          <button onClick={handleLogout} className="logout-btn">
-            Вийти
-          </button>
-        </header>
+    <div className="profile-page">
+      <Header />
 
-        {successMessage && (
-          <div className="success-message">✅ {successMessage}</div>
-        )}
+      <div className="profile-container">
+        <div className="profile-card">
+          <header className="profile-header-sub">
+            <h1>Мій профіль</h1>
+          </header>
 
-        {isEditing && (
-          <div className="edit-mode-banner">
-            📝 Режим редагування: внесіть зміни та натисніть "Оновити дані
-            профілю"
-          </div>
-        )}
-
-        <div className="profile-info">
-          <div className="user-badge">
-            <div className="avatar">
-              {currentUser.firstName?.[0]}
-              {currentUser.lastName?.[0]}
-            </div>
-            <div>
-              <h2>
-                {currentUser.firstName} {currentUser.lastName}
-              </h2>
-              <span
-                className="role-badge"
-                style={{ backgroundColor: ROLES[currentUser.role]?.color }}
-              >
-                {ROLES[currentUser.role]?.label}
-              </span>
-              <span
-                className={`status-badge ${
-                  currentUser.isActive ? "active" : "inactive"
-                }`}
-              >
-                {currentUser.isActive ? "Активний" : "Неактивний"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="profile-form">
-          {/* Debug панель */}
-          <div
-            style={{
-              background: isEditing ? "#d4edda" : "#f8d7da",
-              color: isEditing ? "#155724" : "#721c24",
-              padding: "15px",
-              marginBottom: "15px",
-              borderRadius: "8px",
-              border: `2px solid ${isEditing ? "#28a745" : "#dc3545"}`,
-            }}
-          >
-            <div>
-              🔍 РЕЖИМ:{" "}
-              <strong>{isEditing ? "РЕДАГУВАННЯ" : "ПЕРЕГЛЯД"}</strong>
-            </div>
-            <div>
-              Статус полів:{" "}
-              <strong>
-                {isEditing ? "🔓 РОЗБЛОКОВАНО" : "🔒 ЗАБЛОКОВАНО"}
-              </strong>
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>Прізвище *</label>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                disabled={!isEditing}
-                required
-                style={{
-                  background: isEditing ? "white" : "#f7fafc",
-                  border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-                }}
-              />
-              {errors.lastName && (
-                <span className="error">{errors.lastName}</span>
-              )}
-            </div>
-
-            <div className="form-group">
-              <label>Ім'я *</label>
-              <input
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                disabled={!isEditing}
-                required
-                style={{
-                  background: isEditing ? "white" : "#f7fafc",
-                  border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-                }}
-              />
-              {errors.firstName && (
-                <span className="error">{errors.firstName}</span>
-              )}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>По батькові</label>
-            <input
-              type="text"
-              name="middleName"
-              value={formData.middleName}
-              onChange={handleChange}
-              disabled={!isEditing}
-              style={{
-                background: isEditing ? "white" : "#f7fafc",
-                border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-              }}
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>Телефон</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                disabled={!isEditing}
-                placeholder="+380XXXXXXXXX"
-                style={{
-                  background: isEditing ? "white" : "#f7fafc",
-                  border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-                }}
-              />
-              {errors.phone && <span className="error">{errors.phone}</span>}
-            </div>
-
-            <div className="form-group">
-              <label>Email *</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                disabled={!isEditing}
-                required
-                style={{
-                  background: isEditing ? "white" : "#f7fafc",
-                  border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-                }}
-              />
-              {errors.email && <span className="error">{errors.email}</span>}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Адреса доставки</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              disabled={!isEditing}
-              style={{
-                background: isEditing ? "white" : "#f7fafc",
-                border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-              }}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Дата народження</label>
-            <input
-              type="date"
-              name="birthDate"
-              value={formData.birthDate}
-              onChange={handleChange}
-              disabled={!isEditing}
-              style={{
-                background: isEditing ? "white" : "#f7fafc",
-                border: isEditing ? "2px solid #667eea" : "2px solid #e2e8f0",
-              }}
-            />
-          </div>
+          {successMessage && (
+            <div className="success-message">{successMessage}</div>
+          )}
 
           {isEditing && (
-            <div className="password-section">
-              <h4>Зміна пароля (необов'язково)</h4>
-              <div className="form-group">
-                <label>Новий пароль</label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Мінімум 6 символів"
-                />
-                {errors.password && (
-                  <span className="error">{errors.password}</span>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label>Підтвердження пароля</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-                {errors.confirmPassword && (
-                  <span className="error">{errors.confirmPassword}</span>
-                )}
-              </div>
+            <div className="edit-mode-banner">
+              Режим редагування: внесіть зміни та натисніть "Оновити дані
+              профілю"
             </div>
           )}
 
-          {errors.general && (
-            <div
-              className={
-                errors.general.includes("не були змінені")
-                  ? "warning-message"
-                  : "error-message"
-              }
-            >
-              {errors.general.includes("не були змінені") ? "⚠️" : "❌"}{" "}
-              {errors.general}
-            </div>
-          )}
-
-          <div className="form-actions">
-            {isEditing ? (
-              <>
-                <button type="submit" className="save-btn" disabled={loading}>
-                  {loading ? "⏳ Збереження..." : "💾 Оновити дані профілю"}
-                </button>
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={handleCancel}
-                  disabled={loading}
+          <div className="profile-info">
+            <div className="user-badge">
+              <div className="avatar">
+                {currentUser.firstName?.[0]}
+                {currentUser.lastName?.[0]}
+              </div>
+              <div>
+                <h2>
+                  {currentUser.firstName} {currentUser.lastName}
+                </h2>
+                <span
+                  className="role-badge"
+                  style={{ backgroundColor: ROLES[currentUser.role]?.color }}
                 >
-                  ❌ Скасувати
-                </button>
-              </>
-            ) : (
-              <button type="button" className="edit-btn" onClick={handleEdit}>
-                ✏️ Редагувати профіль
-              </button>
-            )}
+                  {ROLES[currentUser.role]?.label}
+                </span>
+                <span
+                  className={`status-badge ${
+                    currentUser.isActive ? "active" : "inactive"
+                  }`}
+                >
+                  {currentUser.isActive ? "Активний" : "Неактивний"}
+                </span>
+              </div>
+            </div>
           </div>
-        </form>
 
-        <div className="profile-meta">
-          <p>
-            <strong>Дата реєстрації:</strong>{" "}
-            {new Date(currentUser.createdAt).toLocaleDateString("uk-UA", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </p>
+          <form onSubmit={handleSubmit} className="profile-form">
+            {/* Debug панель */}
+            <div className="debug-panel">
+              <div>
+                РЕЖИМ:{" "}
+                <strong>{isEditing ? "РЕДАГУВАННЯ" : "ПЕРЕГЛЯД"}</strong>
+              </div>
+              <div>
+                Статус полів:{" "}
+                <strong>
+                  {isEditing ? "РОЗБЛОКОВАНО" : "ЗАБЛОКОВАНО"}
+                </strong>
+              </div>
+            </div>
+
+            {errors.general && (
+              <div
+                className={
+                  errors.general.includes("не були змінені")
+                    ? "warning-message"
+                    : "error-message"
+                }
+              >
+                {errors.general}
+              </div>
+            )}
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="firstName">Прізвище *</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  required
+                />
+                {errors.firstName && (
+                  <span className="error">{errors.firstName}</span>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="lastName">Ім'я *</label>
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  required
+                />
+                {errors.lastName && (
+                  <span className="error">{errors.lastName}</span>
+                )}
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group form-group-full">
+                <label htmlFor="middleName">По батькові</label>
+                <input
+                  type="text"
+                  id="middleName"
+                  name="middleName"
+                  value={formData.middleName}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="phone">Телефон</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                />
+                {errors.phone && <span className="error">{errors.phone}</span>}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Email *</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  required
+                />
+                {errors.email && <span className="error">{errors.email}</span>}
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group form-group-full">
+                <label htmlFor="address">Адреса доставки</label>
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="birthDate">Дата народження</label>
+                <input
+                  type="date"
+                  id="birthDate"
+                  name="birthDate"
+                  value={formData.birthDate}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+
+            {isEditing && (
+              <div className="password-section">
+                <h4>Зміна пароля (необов'язково)</h4>
+                <div className="form-group">
+                  <label>Новий пароль</label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Мінімум 6 символів"
+                  />
+                  {errors.password && (
+                    <span className="error">{errors.password}</span>
+                  )}
+                </div>
+
+                <div className="form-group">
+                  <label>Підтвердження пароля</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                  {errors.confirmPassword && (
+                    <span className="error">{errors.confirmPassword}</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {errors.general && (
+              <div
+                className={
+                  errors.general.includes("не були змінені")
+                    ? "warning-message"
+                    : "error-message"
+                }
+              >
+                {errors.general}
+              </div>
+            )}
+
+            <div className="form-actions">
+              {isEditing ? (
+                <>
+                  <button type="submit" className="save-btn" disabled={loading}>
+                    {loading ? "Збереження..." : "Оновити дані профілю"}
+                  </button>
+                  <button
+                    type="button"
+                    className="cancel-btn"
+                    onClick={handleCancel}
+                    disabled={loading}
+                  >
+                    Скасувати
+                  </button>
+                </>
+              ) : (
+                <button type="button" className="edit-btn" onClick={handleEdit}>
+                  Редагувати профіль
+                </button>
+              )}
+            </div>
+          </form>
+
+          <div className="profile-meta">
+            <p>
+              <strong>Дата реєстрації:</strong>{" "}
+              {new Date(currentUser.createdAt).toLocaleDateString("uk-UA", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+          </div>
         </div>
       </div>
     </div>
