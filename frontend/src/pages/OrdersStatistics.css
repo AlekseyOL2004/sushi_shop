@@ -122,15 +122,16 @@
 }
 
 .line-chart-container {
-  padding: 1rem;
+  padding: 1.5rem;
   background: white;
   border-radius: 12px;
 }
 
 .chart-area {
   position: relative;
-  height: 300px;
-  margin-bottom: 2rem;
+  height: 350px;
+  margin-bottom: 2.5rem;
+  padding: 1rem 0;
 }
 
 .chart-grid-lines {
@@ -139,30 +140,33 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 0 40px;
+  padding: 0 60px;
 }
 
 .grid-line {
   position: absolute;
-  left: 40px;
-  right: 40px;
+  left: 60px;
+  right: 60px;
   height: 1px;
   background: #e2e8f0;
 }
 
 .grid-value {
   position: absolute;
-  left: -35px;
-  top: -8px;
-  font-size: 0.75rem;
-  color: #718096;
-  font-weight: 600;
+  left: -50px;
+  top: -10px;
+  font-size: 0.85rem;
+  color: #4a5568;
+  font-weight: 700;
+  background: white;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .chart-content {
   position: relative;
   height: 100%;
-  padding: 0 40px;
+  padding: 0 60px;
 }
 
 .chart-svg {
@@ -183,8 +187,9 @@
 .chart-labels {
   display: flex;
   justify-content: space-between;
-  padding: 0 40px;
-  gap: 0.5rem;
+  padding: 0 60px;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .chart-label-item {
@@ -192,20 +197,31 @@
   flex-direction: column;
   align-items: center;
   flex: 1;
-  min-width: 0;
+  min-width: 60px;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, rgba(28, 135, 158, 0.05) 0%, rgba(0, 194, 165, 0.05) 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(28, 135, 158, 0.1);
+  transition: all 0.3s;
+}
+
+.chart-label-item:hover {
+  background: linear-gradient(135deg, rgba(28, 135, 158, 0.1) 0%, rgba(0, 194, 165, 0.1) 100%);
+  border-color: rgba(28, 135, 158, 0.3);
+  transform: translateY(-2px);
 }
 
 .label-value {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 800;
   color: #1c879e;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
 }
 
 .label-text {
-  font-size: 0.85rem;
-  color: #4a5568;
-  font-weight: 600;
+  font-size: 0.9rem;
+  color: #2d3748;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -214,9 +230,12 @@
 
 .no-data {
   text-align: center;
-  padding: 3rem;
+  padding: 4rem;
   color: #718096;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  background: linear-gradient(135deg, rgba(28, 135, 158, 0.05) 0%, rgba(0, 194, 165, 0.05) 100%);
+  border-radius: 12px;
+  border: 2px dashed rgba(28, 135, 158, 0.2);
 }
 
 .status-chart {
@@ -295,6 +314,7 @@
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -530,28 +550,39 @@
     flex: 1;
     min-width: 100px;
   }
-  
+
   .chart-area {
-    height: 250px;
+    height: 280px;
+    margin-bottom: 2rem;
   }
-  
+
   .chart-grid-lines,
   .chart-content,
   .chart-labels {
-    padding: 0 20px;
+    padding: 0 30px;
   }
-  
+
   .grid-line {
-    left: 20px;
-    right: 20px;
+    left: 30px;
+    right: 30px;
   }
-  
-  .label-value {
-    font-size: 0.85rem;
-  }
-  
-  .label-text {
+
+  .grid-value {
+    left: -40px;
     font-size: 0.75rem;
+  }
+
+  .label-value {
+    font-size: 1rem;
+  }
+
+  .label-text {
+    font-size: 0.8rem;
+  }
+
+  .chart-label-item {
+    min-width: 50px;
+    padding: 0.4rem;
   }
 
   .delivery-circle {

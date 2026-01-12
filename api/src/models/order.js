@@ -7,7 +7,7 @@ const orderSchema = new mongoose.Schema(
         itemId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Menu",
-          required: true,
+          required: true, // ← Перевірте це поле
         },
         name: { type: String, required: true },
         price: { type: Number, required: true },
@@ -30,7 +30,23 @@ const orderSchema = new mongoose.Schema(
     },
     cutleryCount: { type: Number, default: 1, min: 0 },
     comment: { type: String, default: "" },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    bonusPointsEarned: {
+      type: Number,
+      default: 0,
+    },
+    bonusRollsUsed: {
+      type: Number,
+      default: 0,
+    },
+    birthdayRollUsed: {
+      type: Boolean,
+      default: false,
+    },
     status: {
       type: String,
       enum: [

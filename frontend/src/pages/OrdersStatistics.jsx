@@ -211,16 +211,18 @@ export default function OrdersStatistics() {
                 <circle
                   cx={500}
                   cy={chartHeight - (data[0].count / maxValue) * chartHeight}
-                  r="8"
+                  r="12"
                   fill="white"
                   stroke="#1c879e"
-                  strokeWidth="3"
+                  strokeWidth="4"
+                  vectorEffect="non-scaling-stroke"
                 />
                 <circle
                   cx={500}
                   cy={chartHeight - (data[0].count / maxValue) * chartHeight}
-                  r="5"
+                  r="8"
                   fill="#1c879e"
+                  vectorEffect="non-scaling-stroke"
                 />
               </svg>
             </div>
@@ -290,8 +292,8 @@ export default function OrdersStatistics() {
                   M 0,${chartHeight}
                   ${data
                     .map((item, index) => {
-                      const x = ((index / Math.max(data.length - 1, 1)) * 1000) || 0;
-                      const y = chartHeight - ((item.count / maxValue) * chartHeight) || chartHeight;
+                      const x = (index / Math.max(data.length - 1, 1)) * 1000;
+                      const y = Math.max(0, chartHeight - (item.count / maxValue) * chartHeight);
                       return `L ${x},${y}`;
                     })
                     .join(" ")}
@@ -299,44 +301,50 @@ export default function OrdersStatistics() {
                   Z
                 `}
                 fill="url(#areaGradient)"
+                vectorEffect="non-scaling-stroke"
               />
 
               {/* Main line */}
               <path
                 d={data
                   .map((item, index) => {
-                    const x = ((index / Math.max(data.length - 1, 1)) * 1000) || 0;
-                    const y = chartHeight - ((item.count / maxValue) * chartHeight) || chartHeight;
+                    const x = (index / Math.max(data.length - 1, 1)) * 1000;
+                    const y = Math.max(0, chartHeight - (item.count / maxValue) * chartHeight);
                     return `${index === 0 ? "M" : "L"} ${x},${y}`;
                   })
                   .join(" ")}
                 fill="none"
                 stroke="url(#lineGradient)"
-                strokeWidth="3"
+                strokeWidth="4"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
               />
 
               {/* Data points */}
               {data.map((item, index) => {
-                const x = ((index / Math.max(data.length - 1, 1)) * 1000) || 0;
-                const y = chartHeight - ((item.count / maxValue) * chartHeight) || chartHeight;
-                
-                // Перевірка на валідність координат
-                if (isNaN(x) || isNaN(y)) return null;
+                const x = (index / Math.max(data.length - 1, 1)) * 1000;
+                const y = Math.max(0, chartHeight - (item.count / maxValue) * chartHeight);
                 
                 return (
                   <g key={index}>
                     <circle
                       cx={x}
                       cy={y}
-                      r="5"
+                      r="8"
                       fill="white"
                       stroke="#1c879e"
-                      strokeWidth="3"
+                      strokeWidth="4"
                       className="data-point"
+                      vectorEffect="non-scaling-stroke"
                     />
-                    <circle cx={x} cy={y} r="3" fill="#1c879e" />
+                    <circle 
+                      cx={x} 
+                      cy={y} 
+                      r="5" 
+                      fill="#1c879e"
+                      vectorEffect="non-scaling-stroke"
+                    />
                   </g>
                 );
               })}

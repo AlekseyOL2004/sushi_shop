@@ -376,6 +376,77 @@ h1 {
   text-transform: uppercase;
 }
 
+.bonus-points-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e2e8f0;
+}
+
+.bonus-points-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+  border: 2px solid rgba(251, 191, 36, 0.3);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.15);
+}
+
+.bonus-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bonus-label {
+  font-size: 0.9rem;
+  color: #78350f;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bonus-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.bonus-hint {
+  font-size: 0.8rem;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.bonus-available {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%);
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  border-radius: 10px;
+  color: #15803d;
+  font-weight: 700;
+  text-align: center;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+}
+
 @media (max-width: 768px) {
   .profile-container {
     padding: 1rem;

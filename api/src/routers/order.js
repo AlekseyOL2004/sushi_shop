@@ -6,13 +6,92 @@ const router = new express.Router();
 // Створити нове замовлення (публічний маршрут)
 router.post("/", async (req, res) => {
   try {
-    const order = new Order(req.body);
+    const {
+      items,
+      totalPrice,
+      customerName,
+      customerPhone,
+      customerAddress,
+      deliveryType,
+      sticksType,
+      cutleryCount,
+      comment,
+      userId,
+      bonusRollsUsed,
+      birthdayRollUsed,
+    } = req.body;
+
+    // Валідація вхідних даних
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "Items are required" });
+    }
+
+    if (!totalPrice || isNaN(totalPrice)) {
+      return res.status(400).json({ message: "Valid totalPrice is required" });
+    }
+
+    // Розрахувати кількість балів для нарахування
+    // 1 бал = 100 грн (2 знаки після коми)
+    let bonusPointsEarned = 0;
+    if (userId) {
+      // Округлення до 2 знаків після коми
+      bonusPointsEarned = Math.floor((totalPrice / 100) * 100) / 100; //  200) * 100) / 100;
+    }
+
+    const order = new Order({
+      items,
+      totalPrice,
+      customerName,
+      customerPhone,
+      customerAddress,
+      deliveryType: deliveryType || "delivery",
+      sticksType,
+      cutleryCount: cutleryCount || 1,
+      comment,
+      userId: userId || null,
+      bonusPointsEarned,
+      bonusRollsUsed: bonusRollsUsed || 0,
+      birthdayRollUsed: birthdayRollUsed || false,
+      status: "pending",
+      statusHistory: [
+        {
+          status: "pending",
+          timestamp: new Date(),
+        },
+      ],
+    });
+
     await order.save();
-    console.log(`✅ New order created: ${order._id}`);
-    res.status(201).json(order);
+
+    // Нарахувати бонусні бали користувачу
+    if (userId && bonusPointsEarned > 0) {
+      const User = require("../models/user");
+      const user = await User.findById(userId);
+      if (user) {
+        // Спочатку додаємо бали, потім округлюємо до 2 знаків
+        let newBonusPoints = (user.bonusPoints || 0) + bonusPointsEarned;
+
+        // Списати використані бонусні роли
+        if (bonusRollsUsed > 0) {
+          const pointsToDeduct = bonusRollsUsed * 20;
+          newBonusPoints = newBonusPoints - pointsToDeduct;
+        }
+
+        // Округлення до 2 знаків після коми в кінці
+        user.bonusPoints = Math.max(0, Math.round(newBonusPoints * 100) / 100);
+
+        await user.save();
+        console.log(
+          `✅ User ${user.email} earned ${bonusPointsEarned} bonus points. Total: ${user.bonusPoints}`
+        );
+      }
+    }
+
+    console.log("✅ Order created successfully:", order._id);
+    res.json(order);
   } catch (error) {
-    console.error("Create order error:", error);
-    res.status(400).json({ message: error.message || "Bad Request" });
+    console.error("❌ Create order error:", error);
+    res.status(400).json({ message: error.message });
   }
 });
 

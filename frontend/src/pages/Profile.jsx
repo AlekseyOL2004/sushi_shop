@@ -286,6 +286,25 @@ export default function Profile() {
                 </span>
               </div>
             </div>
+
+            {/* Бонусні бали */}
+            <div className="bonus-points-section">
+              <div className="bonus-points-card">
+                <div className="bonus-info">
+                  <span className="bonus-label">Бонусні бали</span>
+                  <span className="bonus-value">
+                    {currentUser.bonusPoints?.toFixed(2) || "0.00"}
+                  </span>
+                  <span className="bonus-hint">1 бал = 100₴</span>
+                </div>
+              </div>
+              {currentUser.bonusPoints >= 20 && (
+                <div className="bonus-available">
+                  Ви можете отримати{" "}
+                  {Math.floor(currentUser.bonusPoints / 20)} рол(ів) у подарунок!
+                </div>
+              )}
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="profile-form">

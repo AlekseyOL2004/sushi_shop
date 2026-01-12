@@ -33,6 +33,11 @@ const userSchema = new mongoose.Schema({
   birthDate: {
     type: Date,
   },
+  bonusPoints: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
   password: {
     type: String,
     required: [true, "Password is required"],

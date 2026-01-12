@@ -746,4 +746,271 @@
   .detail-item-success {
     font-size: 0.85rem;
   }
+
+  .bonus-header-simple {
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+  }
+
+  .bonus-info-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .bonus-balance {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bonus-icon-small {
+    font-size: 1.75rem;
+  }
+
+  .bonus-selector {
+    width: 100%;
+  }
+
+  .bonus-count-select {
+    width: 100%;
+  }
+}
+
+/* Бонусна секція */
+.bonus-section {
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-top: 1.5rem;
+}
+
+.birthday-bonus,
+.bonus-points-bonus {
+  margin-bottom: 1.5rem;
+}
+
+.birthday-bonus:last-child,
+.bonus-points-bonus:last-child {
+  margin-bottom: 0;
+}
+
+.birthday-header,
+.bonus-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+}
+
+.birthday-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.birthday-header strong,
+.bonus-header strong {
+  font-size: 1.05rem;
+  color: #2d3748;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.birthday-header p,
+.bonus-header p {
+  color: #4a5568;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.bonus-header-simple {
+  background: white;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+}
+
+.bonus-info-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.bonus-balance {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f7fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.bonus-balance strong {
+  font-size: 1.05rem;
+  color: #2d3748;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.bonus-balance p {
+  color: #4a5568;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.bonus-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bonus-count-label {
+  font-size: 0.95rem;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.bonus-count-select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.bonus-count-select:focus {
+  outline: none;
+  border-color: #1c879e;
+  box-shadow: 0 0 0 3px rgba(28, 135, 158, 0.1);
+}
+
+.bonus-count-select:hover {
+  border-color: #cbd5e0;
+}
+
+.bonus-selected-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: #e6fffa;
+  border: 2px solid #81e6d9;
+  border-radius: 8px;
+}
+
+.bonus-selected-info strong {
+  font-size: 0.95rem;
+  color: #234e52;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.bonus-selected-info p {
+  color: #2c7a7b;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.birthday-checkbox-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.birthday-checkbox {
+  width: 20px;
+  height: 20px;
+  margin-top: 0.25rem;
+  cursor: pointer;
+  accent-color: #1c879e;
+  flex-shrink: 0;
+}
+
+.birthday-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.birthday-checkbox-label strong {
+  font-size: 1.05rem;
+  color: #2d3748;
+}
+
+.birthday-checkbox-label p {
+  color: #4a5568;
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.selected-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: #1c879e;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.total-row.bonus {
+  color: #2d3748;
+  font-weight: 600;
+  padding: 0.5rem;
+  background: #f7fafc;
+  border-radius: 6px;
+  margin: 0.5rem 0;
+  border: 1px solid #e2e8f0;
+}
+
+.total-row.birthday {
+  background: #fef3c7;
+  color: #78350f;
+  border: 1px solid #fbbf24;
+}
+
+.bonus-value,
+.birthday-value {
+  color: #1c879e;
+  font-weight: 700;
+}
+
+.birthday-value {
+  color: #d97706;
+}
+
+.bonus-earn-info {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: #f0f9ff;
+  border: 2px solid #bae6fd;
+  border-radius: 8px;
+  color: #075985;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.bonus-earn-info strong {
+  color: #0c4a6e;
+  font-size: 1.1rem;
 }

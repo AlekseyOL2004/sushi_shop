@@ -24,19 +24,55 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
+  const [availableRolls, setAvailableRolls] = useState([]);
+  const [maxBonusRolls, setMaxBonusRolls] = useState(0);
+  const [birthdayRoll, setBirthdayRoll] = useState(null);
+  const [isBirthday, setIsBirthday] = useState(false);
+  const [useBirthdayRoll, setUseBirthdayRoll] = useState(false);
+  const [bonusRollsCount, setBonusRollsCount] = useState(0);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
       const user = JSON.parse(userData);
       setCurrentUser(user);
+      
+      // Перевірка чи сьогодні день народження
+      if (user.birthDate) {
+        const today = new Date();
+        const birthDate = new Date(user.birthDate);
+        const isBirthdayToday = 
+          today.getDate() === birthDate.getDate() &&
+          today.getMonth() === birthDate.getMonth();
+        setIsBirthday(isBirthdayToday);
+      }
+      
+      // Розрахунок максимальної кількості бонусних ролів
+      if (user.bonusPoints >= 20) {
+        setMaxBonusRolls(Math.floor(user.bonusPoints / 20));
+      }
     }
 
     const savedCart = localStorage.getItem("cart");
     if (savedCart) {
       setCart(JSON.parse(savedCart));
     }
+    
+    // Завантажити список ролів для подарунків (тільки для дня народження)
+    fetchAvailableRolls();
   }, []);
+
+  const fetchAvailableRolls = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/menu?category=rolls&available=true`);
+      if (res.ok) {
+        const data = await res.json();
+        setAvailableRolls(data.filter(item => item.category === 'rolls' || item.name.toLowerCase().includes('рол')));
+      }
+    } catch (error) {
+      console.error("Error fetching rolls:", error);
+    }
+  };
 
   const loadUserData = () => {
     if (currentUser) {
@@ -50,6 +86,14 @@ export default function Checkout() {
         cutleryCount: formData.cutleryCount,
         comment: formData.comment,
       });
+    }
+  };
+
+  const handleBirthdayRollSelect = (roll) => {
+    if (birthdayRoll?._id === roll._id) {
+      setBirthdayRoll(null);
+    } else {
+      setBirthdayRoll(roll);
     }
   };
 
@@ -100,13 +144,38 @@ export default function Checkout() {
 
     setLoading(true);
     try {
-      const orderData = {
-        items: cart.map((item) => ({
+      // Перевірка структури товарів у кошику
+      console.log('Cart items:', cart);
+
+      // Додати товари з кошика
+      const allItems = cart.map((item) => {
+        if (!item._id) {
+          console.error('Item without _id:', item);
+          throw new Error(`Товар "${item.name}" не має _id`);
+        }
+        
+        return {
           itemId: item._id,
           name: item.name,
           price: item.price,
           quantity: item.quantity,
-        })),
+        };
+      });
+
+      // Додати подарунковий рол за день народження тільки якщо чекбокс активний
+      if (useBirthdayRoll && birthdayRoll && birthdayRoll._id) {
+        allItems.push({
+          itemId: birthdayRoll._id,
+          name: `${birthdayRoll.name} (Подарунок на День Народження 🎂)`,
+          price: 0,
+          quantity: 1,
+        });
+      } else if (useBirthdayRoll && !birthdayRoll) {
+        console.error('Birthday roll checkbox is checked but no roll selected');
+      }
+
+      const orderData = {
+        items: allItems,
         totalPrice: getTotalPrice(),
         customerName:
           `${formData.lastName} ${formData.firstName} ${formData.middleName}`.trim(),
@@ -118,7 +187,12 @@ export default function Checkout() {
         cutleryCount: Number(formData.cutleryCount),
         comment: formData.comment,
         userId: currentUser?._id,
+        bonusRollsUsed: bonusRollsCount,
+        birthdayRollUsed: useBirthdayRoll && birthdayRoll ? true : false,
       };
+
+      console.log('Order data:', orderData);
+      console.log('Items structure:', allItems);
 
       const res = await fetch(`${API_BASE}/orders`, {
         method: "POST",
@@ -128,6 +202,7 @@ export default function Checkout() {
 
       if (!res.ok) {
         const errorData = await res.json();
+        console.error('Server error response:', errorData);
         throw new Error(errorData.message || "Помилка оформлення замовлення");
       }
 
@@ -136,18 +211,25 @@ export default function Checkout() {
       localStorage.removeItem("cart");
       setCart([]);
       
-      // Викликати кастомну подію для оновлення Header
+      // Оновити дані користувача з новими бонусними балами
+      if (currentUser) {
+        const userRes = await fetch(`${API_BASE}/users/${currentUser._id}`);
+        if (userRes.ok) {
+          const updatedUser = await userRes.json();
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+        }
+      }
+      
       window.dispatchEvent(new Event('cartUpdated'));
 
-      // Показати toast замість alert
       setOrderNumber(order._id.slice(-6).toUpperCase());
       setShowSuccessToast(true);
 
-      // Перенаправити на головну через 4 секунди
       setTimeout(() => {
         navigate("/");
       }, 4000);
     } catch (error) {
+      console.error('Order submission error:', error);
       alert("❌ Помилка: " + error.message);
     } finally {
       setLoading(false);
@@ -473,6 +555,109 @@ export default function Checkout() {
                   )}
                 </button>
               </form>
+
+              {/* Бонусні роли */}
+              {currentUser && (maxBonusRolls > 0 || isBirthday) && (
+                <div className="form-section bonus-section">
+                  <h3>
+                    <img src="/icon/reviews.png" alt="" className="section-icon" />
+                    Подарунки
+                  </h3>
+
+                  {/* День народження */}
+                  {isBirthday && (
+                    <div className="birthday-bonus">
+                      <div className="birthday-header">
+                        <div className="birthday-checkbox-wrapper">
+                          <input
+                            type="checkbox"
+                            id="useBirthdayRoll"
+                            checked={useBirthdayRoll}
+                            onChange={(e) => {
+                              setUseBirthdayRoll(e.target.checked);
+                              if (!e.target.checked) {
+                                setBirthdayRoll(null);
+                              }
+                            }}
+                            className="birthday-checkbox"
+                          />
+                          <label htmlFor="useBirthdayRoll" className="birthday-checkbox-label">
+                            <span className="birthday-icon">🎂</span>
+                            <div>
+                              <strong>З Днем Народження!</strong>
+                              <p>Ви отримали рол у подарунок від нас!</p>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                      {useBirthdayRoll && (
+                        <div className="bonus-rolls-grid">
+                          {availableRolls.slice(0, 6).map((roll) => (
+                            <div
+                              key={`birthday-${roll._id}`}
+                              className={`bonus-roll-card ${
+                                birthdayRoll?._id === roll._id ? "selected" : ""
+                              }`}
+                              onClick={() => handleBirthdayRollSelect(roll)}
+                            >
+                              <div className="roll-image">{roll.image}</div>
+                              <div className="roll-name">{roll.name}</div>
+                              <div className="roll-price">{roll.price}₴</div>
+                              {birthdayRoll?._id === roll._id && (
+                                <div className="selected-badge">Обрано</div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Бонусні бали */}
+                  {maxBonusRolls > 0 && (
+                    <div className="bonus-points-bonus">
+                      <div className="bonus-header-simple">
+                        <div className="bonus-info-block">
+                          <div className="bonus-balance">
+                            <div>
+                              <strong>Бонусні бали: {currentUser.bonusPoints?.toFixed(2)}</strong>
+                              <p>Ви можете отримати до {maxBonusRolls} {maxBonusRolls === 1 ? 'рола' : 'ролів'} у подарунок (20 балів = 1 рол)</p>
+                            </div>
+                          </div>
+                          
+                          <div className="bonus-selector">
+                            <label htmlFor="bonusRollsCount" className="bonus-count-label">
+                              Скільки ролів списати за бонуси:
+                            </label>
+                            <select
+                              id="bonusRollsCount"
+                              value={bonusRollsCount}
+                              onChange={(e) => setBonusRollsCount(Number(e.target.value))}
+                              className="bonus-count-select"
+                            >
+                              <option value={0}>0 (не використовувати)</option>
+                              {Array.from({ length: maxBonusRolls }, (_, i) => i + 1).map((num) => (
+                                <option key={num} value={num}>
+                                  {num} {num === 1 ? 'рол' : num < 5 ? 'роли' : 'ролів'}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {bonusRollsCount > 0 && (
+                            <div className="bonus-selected-info">
+                              <div>
+                                <strong>Обрано {bonusRollsCount} {bonusRollsCount === 1 ? 'рол' : bonusRollsCount < 5 ? 'роли' : 'ролів'} за бонуси</strong>
+                                <p>Менеджер передзвонить вам і допоможе обрати страви</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Товари в кошику (права сторона) */}
@@ -517,6 +702,50 @@ export default function Checkout() {
                       </button>
                     </div>
                   ))}
+
+                  {/* Бонусні роли */}
+                  {bonusRollsCount > 0 && (
+                    <div className="cart-item bonus-item-placeholder">
+                      <div className="item-image">🎁</div>
+                      <div className="item-details">
+                        <h4>Бонусні роли ({bonusRollsCount} шт)</h4>
+                        <p className="item-price bonus-label">Менеджер допоможе обрати</p>
+                      </div>
+                      <div className="item-quantity">
+                        <span>{bonusRollsCount} шт</span>
+                      </div>
+                      <button
+                        onClick={() => setBonusRollsCount(0)}
+                        className="remove-btn"
+                        title="Скасувати використання бонусів"
+                      >
+                        <img src="/icon/bin.png" alt="Видалити" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* День народження рол */}
+                  {useBirthdayRoll && birthdayRoll && (
+                    <div key="cart-birthday" className="cart-item birthday-item">
+                      <div className="item-image">{birthdayRoll.image}</div>
+                      <div className="item-details">
+                        <h4>{birthdayRoll.name}</h4>
+                        <p className="item-price birthday-label">🎂 Подарунок на День Народження</p>
+                      </div>
+                      <div className="item-quantity">
+                        <span>1 шт</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setBirthdayRoll(null);
+                          setUseBirthdayRoll(false);
+                        }}
+                        className="remove-btn"
+                      >
+                        <img src="/icon/bin.png" alt="Видалити" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Summary */}
@@ -537,6 +766,18 @@ export default function Checkout() {
                       ₴
                     </span>
                   </div>
+                  {bonusRollsCount > 0 && (
+                    <div className="total-row bonus">
+                      <span>Бонусні роли ({bonusRollsCount} шт):</span>
+                      <span className="bonus-value">-{bonusRollsCount * 20} балів</span>
+                    </div>
+                  )}
+                  {useBirthdayRoll && birthdayRoll && (
+                    <div className="total-row birthday">
+                      <span>🎂 Подарунок на День Народження:</span>
+                      <span className="birthday-value">БЕЗКОШТОВНО</span>
+                    </div>
+                  )}
                   {deliveryType === "pickup" && (
                     <div className="total-row discount">
                       <span>Знижка (самовивіз -5%):</span>
@@ -556,6 +797,11 @@ export default function Checkout() {
                     <span>До сплати:</span>
                     <span>{getTotalPrice().toFixed(2)}₴</span>
                   </div>
+                  {currentUser && getTotalPrice() > 0 && (
+                    <div className="bonus-earn-info">
+                      Ви отримаєте: <strong>{(getTotalPrice() / 100).toFixed(2)}</strong> бонусних балів
+                    </div>
+                  )}
                 </div>
               </div>
             )}

@@ -58,6 +58,13 @@ export default function Menu() {
   const addToCart = (item) => {
     if (!item.isAvailable) return;
 
+    // Перевірка що товар має _id
+    if (!item._id) {
+      console.error('Item without _id:', item);
+      alert('Помилка: товар не має ідентифікатора');
+      return;
+    }
+
     const existingItem = cart.find((i) => i._id === item._id);
     let newCart;
 
@@ -66,16 +73,22 @@ export default function Menu() {
         i._id === item._id ? { ...i, quantity: i.quantity + 1 } : i
       );
     } else {
-      newCart = [...cart, { ...item, quantity: 1 }];
+      // Зберігаємо всі важливі поля включно з _id
+      newCart = [...cart, { 
+        _id: item._id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        category: item.category,
+        quantity: 1 
+      }];
     }
 
     setCart(newCart);
     localStorage.setItem("cart", JSON.stringify(newCart));
     
-    // Викликати кастомну подію для оновлення Header
     window.dispatchEvent(new Event('cartUpdated'));
 
-    // Показати сповіщення
     setToastMessage(`✓ "${item.name}" додано до кошика!`);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);

@@ -60,3 +60,5 @@ menuSchema.pre("save", function (next) {
 const Menu = mongoose.model("Menu", menuSchema);
 
 module.exports = Menu;
+
+// Переконайтеся що MongoDB автоматично додає _id при збереженні
