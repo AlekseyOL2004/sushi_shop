@@ -1,41 +1,161 @@
 const express = require("express");
 const Review = require("../models/review");
+const User = require("../models/user");
 const router = new express.Router();
 
-// Отримати всі схвалені відгуки
+// Отримати всі відгуки
 router.get("/", async (req, res) => {
   try {
-    const reviews = await Review.find({ approved: true }).sort({
-      createdAt: -1,
-    });
+    const { limit, approved } = req.query;
+
+    const filter = {};
+    if (approved === "true") {
+      filter.isApproved = true;
+    }
+
+    let query = Review.find(filter)
+      .populate("userId", "firstName lastName")
+      .populate("products", "name image")
+      .sort({ createdAt: -1 });
+
+    if (limit) {
+      query = query.limit(parseInt(limit));
+    }
+
+    const reviews = await query;
     res.json(reviews);
   } catch (error) {
+    console.error("Get reviews error:", error);
     res.status(500).json({ message: error.message });
   }
 });
 
-// Створити новий відгук
+// Отримати відгук за ID
+router.get("/:id", async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.id)
+      .populate("userId", "firstName lastName")
+      .populate("products", "name image price");
+
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    res.json(review);
+  } catch (error) {
+    console.error("Get review error:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Створити відгук
 router.post("/", async (req, res) => {
   try {
-    const review = new Review(req.body);
+    const { userId, name, rating, text, products } = req.body;
+
+    if (!userId || !name || !rating || !text) {
+      return res.status(400).json({ message: "Required fields missing" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const review = new Review({
+      userId,
+      name,
+      rating,
+      text,
+      products: products || [],
+    });
+
     await review.save();
-    res.status(201).json(review);
+
+    const populatedReview = await Review.findById(review._id)
+      .populate("userId", "firstName lastName")
+      .populate("products", "name image");
+
+    console.log(`✅ New review created by ${name}`);
+    res.status(201).json(populatedReview);
   } catch (error) {
+    console.error("Create review error:", error);
     res.status(400).json({ message: error.message });
   }
 });
 
-// Схвалити відгук (адмін)
-router.patch("/:id/approve", async (req, res) => {
+// Оновити відгук
+router.patch("/:id", async (req, res) => {
   try {
-    const review = await Review.findByIdAndUpdate(
-      req.params.id,
-      { approved: true },
-      { new: true }
-    );
-    if (!review) return res.status(404).json({ message: "Review not found" });
-    res.json(review);
+    const { userId, rating, text, products } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID required" });
+    }
+
+    const review = await Review.findById(req.params.id);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Перевірка прав: тільки автор або адмін можуть редагувати
+    if (review.userId.toString() !== userId && user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    if (rating) review.rating = rating;
+    if (text) review.text = text;
+    if (products !== undefined) review.products = products;
+
+    await review.save();
+
+    const updatedReview = await Review.findById(review._id)
+      .populate("userId", "firstName lastName")
+      .populate("products", "name image");
+
+    console.log(`✅ Review ${review._id} updated`);
+    res.json(updatedReview);
   } catch (error) {
+    console.error("Update review error:", error);
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// Видалити відгук
+router.delete("/:id", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID required" });
+    }
+
+    const review = await Review.findById(req.params.id);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Перевірка прав: тільки автор або адмін можуть видаляти
+    if (review.userId.toString() !== userId && user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    await Review.findByIdAndDelete(req.params.id);
+
+    console.log(`✅ Review ${req.params.id} deleted`);
+    res.json({ message: "Review deleted successfully" });
+  } catch (error) {
+    console.error("Delete review error:", error);
     res.status(400).json({ message: error.message });
   }
 });

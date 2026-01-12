@@ -2,18 +2,50 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "./Header.css";
 
-export default function Header({ cartCount = 0 }) {
+export default function Header({ cartCount }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentUser, setCurrentUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [localCartCount, setLocalCartCount] = useState(0);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
       setCurrentUser(JSON.parse(userData));
     }
+
+    // Завантажити кошик з localStorage
+    updateCartCount();
+
+    // Слухати зміни в localStorage
+    const handleStorageChange = () => {
+      updateCartCount();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    // Також слухаємо кастомну подію для оновлення в межах одної вкладки
+    window.addEventListener("cartUpdated", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("cartUpdated", handleStorageChange);
+    };
   }, []);
+
+  const updateCartCount = () => {
+    const savedCart = localStorage.getItem("cart");
+    if (savedCart) {
+      const cart = JSON.parse(savedCart);
+      const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+      setLocalCartCount(count);
+    } else {
+      setLocalCartCount(0);
+    }
+  };
+
+  // Використовувати переданий cartCount або локальний
+  const displayCartCount = cartCount !== undefined ? cartCount : localCartCount;
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -108,7 +140,10 @@ export default function Header({ cartCount = 0 }) {
                   Замовлення
                 </button>
               )}
-              <a href="/#reviews" className="nav-link">
+              <button
+                onClick={() => navigate("/reviews")}
+                className={`nav-link ${isActive("/reviews") ? "active" : ""}`}
+              >
                 <img
                   src="/icon/reviews.png"
                   alt="Відгуки"
@@ -120,20 +155,7 @@ export default function Header({ cartCount = 0 }) {
                   }}
                 />
                 Відгуки
-              </a>
-              <a href="/#delivery" className="nav-link">
-                <img
-                  src="/icon/delivery.png"
-                  alt="Доставка"
-                  style={{
-                    width: "18px",
-                    height: "18px",
-                    minWidth: "18px",
-                    minHeight: "18px",
-                  }}
-                />
-                Доставка
-              </a>
+              </button>
             </nav>
           </div>
 
@@ -331,7 +353,7 @@ export default function Header({ cartCount = 0 }) {
                   }}
                 />
               </span>
-              {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+              {displayCartCount > 0 && <span className="cart-badge">{displayCartCount}</span>}
             </button>
           </div>
         </div>
@@ -408,11 +430,8 @@ export default function Header({ cartCount = 0 }) {
           </>
         )}
         <button
-          onClick={() => {
-            closeMobileMenu();
-            window.location.href = "/#reviews";
-          }}
-          className="nav-link"
+          onClick={() => handleNavigation("/reviews")}
+          className={`nav-link ${isActive("/reviews") ? "active" : ""}`}
         >
           <img
             src="/icon/reviews.png"
@@ -425,25 +444,6 @@ export default function Header({ cartCount = 0 }) {
             }}
           />
           Відгуки
-        </button>
-        <button
-          onClick={() => {
-            closeMobileMenu();
-            window.location.href = "/#delivery";
-          }}
-          className="nav-link"
-        >
-          <img
-            src="/icon/delivery.png"
-            alt="Доставка"
-            style={{
-              width: "18px",
-              height: "18px",
-              minWidth: "18px",
-              minHeight: "18px",
-            }}
-          />
-          Доставка
         </button>
       </nav>
     </>

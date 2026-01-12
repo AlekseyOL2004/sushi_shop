@@ -14,6 +14,8 @@ services:
       - PORT=3001
       - HOST=0.0.0.0
       - MONGO_URL=mongodb://api_db:27017/api
+    volumes:
+      - ./api/uploads:/usr/src/app/uploads
     depends_on:
       - api_db
 

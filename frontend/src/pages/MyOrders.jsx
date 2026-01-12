@@ -6,46 +6,44 @@ import "./MyOrders.css";
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
 const STATUS_CONFIG = {
+  pending: {
+    label: "Очікує підтвердження",
+    color: "#fbbf24",
+    description: "Ваше замовлення отримано і очікує підтвердження менеджером",
+  },
   processing: {
     label: "В обробці",
-    color: "#fbbf24",
-    icon: "⏳",
-    description: "Ваше замовлення прийнято і очікує обробки",
+    color: "#f97316",
+    description: "Ваше замовлення прийнято і обробляється",
   },
   confirmed: {
-    label: "Прийнято",
+    label: "Підтверджено",
     color: "#60a5fa",
-    icon: "✅",
     description: "Замовлення підтверджено менеджером",
   },
   preparing: {
     label: "Готується",
     color: "#f97316",
-    icon: "👨‍🍳",
     description: "Ваше замовлення готується на кухні",
   },
   ready: {
     label: "Готово",
     color: "#a855f7",
-    icon: "✨",
     description: "Замовлення готове до самовивозу",
   },
   delivering: {
     label: "Доставляється",
     color: "#3b82f6",
-    icon: "🚚",
     description: "Кур'єр везе ваше замовлення",
   },
   completed: {
     label: "Виконано",
     color: "#22c55e",
-    icon: "🎉",
     description: "Замовлення доставлено. Смачного!",
   },
   cancelled: {
     label: "Скасовано",
     color: "#ef4444",
-    icon: "❌",
     description: "Замовлення скасовано",
   },
 };
@@ -103,6 +101,7 @@ export default function MyOrders() {
 
   const getStatusProgress = (status) => {
     const statuses = [
+      "pending",
       "processing",
       "confirmed",
       "preparing",
@@ -121,17 +120,27 @@ export default function MyOrders() {
       <Header />
 
       <div className="my-orders-container">
-        <h1>📦 Мої замовлення</h1>
+        <header className="page-header">
+          <img src="/icon/box.png" alt="" className="page-icon" />
+          <h1>Мої замовлення</h1>
+        </header>
 
         {loading ? (
           <div className="loading">Завантаження...</div>
         ) : orders.length === 0 ? (
           <div className="no-orders-placeholder">
-            <div className="no-orders-icon">🛒</div>
+            <div className="no-orders-icon-wrapper">
+              <img
+                src="/icon/basket.png"
+                alt="Порожньо"
+                className="no-orders-icon"
+              />
+            </div>
             <h2>У вас ще немає замовлень</h2>
             <p>Перейдіть до меню та зробіть своє перше замовлення!</p>
             <button onClick={() => navigate("/menu")} className="go-menu-btn">
-              📋 Перейти до меню
+              <img src="/icon/menu.png" alt="" />
+              Перейти до меню
             </button>
           </div>
         ) : (
@@ -139,7 +148,7 @@ export default function MyOrders() {
             {orders.map((order) => (
               <div key={order._id} className="order-card-my">
                 <div className="order-card-header">
-                  <div>
+                  <div className="order-header-info">
                     <h3>Замовлення #{order._id.slice(-6).toUpperCase()}</h3>
                     <p className="order-date">
                       {new Date(order.createdAt).toLocaleString("uk-UA", {
@@ -157,7 +166,6 @@ export default function MyOrders() {
                       backgroundColor: STATUS_CONFIG[order.status].color,
                     }}
                   >
-                    {STATUS_CONFIG[order.status].icon}{" "}
                     {STATUS_CONFIG[order.status].label}
                   </span>
                 </div>
@@ -168,7 +176,7 @@ export default function MyOrders() {
                       className="progress-fill"
                       style={{
                         width: `${getStatusProgress(order.status)}%`,
-                        backgroundColor: STATUS_CONFIG[order.status].color,
+                        background: `linear-gradient(90deg, ${STATUS_CONFIG[order.status].color}, ${STATUS_CONFIG[order.status].color}dd)`,
                       }}
                     />
                   </div>
@@ -179,7 +187,10 @@ export default function MyOrders() {
 
                 <div className="order-summary">
                   <div className="order-items-preview">
-                    <strong>Товари:</strong>
+                    <div className="summary-header">
+                      <img src="/icon/box.png" alt="" className="summary-icon" />
+                      <strong>Товари:</strong>
+                    </div>
                     <ul>
                       {order.items.slice(0, 3).map((item, idx) => (
                         <li key={idx}>
@@ -187,19 +198,26 @@ export default function MyOrders() {
                         </li>
                       ))}
                       {order.items.length > 3 && (
-                        <li>... і ще {order.items.length - 3} товар(ів)</li>
+                        <li className="more-items">
+                          + ще {order.items.length - 3} товар(ів)
+                        </li>
                       )}
                     </ul>
                   </div>
 
                   <div className="order-delivery-info">
-                    <p>
+                    <div className="summary-header">
+                      <img
+                        src="/icon/delivery.png"
+                        alt=""
+                        className="summary-icon"
+                      />
                       <strong>
                         {order.deliveryType === "delivery"
-                          ? "🏠 Доставка"
-                          : "🏪 Самовивіз"}
+                          ? "Доставка"
+                          : "Самовивіз"}
                       </strong>
-                    </p>
+                    </div>
                     <p className="delivery-address">{order.customerAddress}</p>
                   </div>
 
@@ -215,7 +233,7 @@ export default function MyOrders() {
                   onClick={() => openOrderDetails(order)}
                   className="view-order-btn"
                 >
-                  👁️ Переглянути деталі
+                  Переглянути деталі
                 </button>
               </div>
             ))}
@@ -227,84 +245,145 @@ export default function MyOrders() {
       {showModal && selectedOrder && (
         <div className="modal-overlay" onClick={closeModal}>
           <div
-            className="modal-content-large"
+            className="modal-content-details"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2>Замовлення #{selectedOrder._id.slice(-6).toUpperCase()}</h2>
-
-            <div className="order-timeline">
-              <h3>📊 Статус замовлення</h3>
-              {selectedOrder.statusHistory.map((history, idx) => (
-                <div key={idx} className="timeline-item">
-                  <div
-                    className="timeline-marker"
-                    style={{
-                      backgroundColor: STATUS_CONFIG[history.status].color,
-                    }}
-                  >
-                    {STATUS_CONFIG[history.status].icon}
-                  </div>
-                  <div className="timeline-content">
-                    <strong>{STATUS_CONFIG[history.status].label}</strong>
-                    <p>
-                      {new Date(history.timestamp).toLocaleString("uk-UA", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="modal-header">
+              <h2>Замовлення #{selectedOrder._id.slice(-6).toUpperCase()}</h2>
+              <button onClick={closeModal} className="close-modal-btn-icon">
+                ✕
+              </button>
             </div>
 
-            <div className="order-details-section">
-              <h3>🛍️ Товари</h3>
-              <div className="order-items-list">
-                {selectedOrder.items.map((item, idx) => (
-                  <div key={idx} className="order-item-row">
-                    <span className="item-name">{item.name}</span>
-                    <span className="item-quantity">× {item.quantity}</span>
-                    <span className="item-price">
-                      {(item.price * item.quantity).toFixed(2)}₴
+            <div className="modal-body">
+              <div className="order-timeline-section">
+                <h3>
+                  <img src="/icon/clock.png" alt="" className="section-icon" />
+                  Статус замовлення
+                </h3>
+                <div className="order-timeline">
+                  {[...selectedOrder.statusHistory]
+                    .reverse()
+                    .map((history, idx) => (
+                      <div key={idx} className="timeline-item">
+                        <div
+                          className="timeline-marker"
+                          style={{
+                            backgroundColor: STATUS_CONFIG[history.status].color,
+                          }}
+                        >
+                          {idx === 0 ? "●" : idx + 1}
+                        </div>
+                        <div className="timeline-content">
+                          <strong>{STATUS_CONFIG[history.status].label}</strong>
+                          <p>
+                            {new Date(history.timestamp).toLocaleString("uk-UA", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              <div className="order-details-section">
+                <h3>
+                  <img src="/icon/box.png" alt="" className="section-icon" />
+                  Товари
+                </h3>
+                <div className="order-items-list">
+                  {selectedOrder.items.map((item, idx) => (
+                    <div key={idx} className="order-item-row">
+                      <span className="item-name">{item.name}</span>
+                      <span className="item-quantity">× {item.quantity}</span>
+                      <span className="item-price">
+                        {(item.price * item.quantity).toFixed(2)}₴
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="order-details-section">
+                <h3>
+                  <img src="/icon/delivery.png" alt="" className="section-icon" />
+                  Інформація про доставку
+                </h3>
+                <div className="details-grid">
+                  <div className="detail-item">
+                    <span className="detail-label">Тип:</span>
+                    <span className="detail-value">
+                      {selectedOrder.deliveryType === "delivery"
+                        ? "Доставка"
+                        : "Самовивіз"}
                     </span>
                   </div>
-                ))}
+                  <div className="detail-item">
+                    <span className="detail-label">Адреса:</span>
+                    <span className="detail-value">
+                      {selectedOrder.customerAddress}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Телефон:</span>
+                    <span className="detail-value">
+                      {selectedOrder.customerPhone}
+                    </span>
+                  </div>
+                  {selectedOrder.comment && (
+                    <div className="detail-item full-width">
+                      <span className="detail-label">Коментар:</span>
+                      <span className="detail-value">{selectedOrder.comment}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="order-total-section">
+                <div className="total-row">
+                  <span>Сума товарів:</span>
+                  <span>
+                    {selectedOrder.items
+                      .reduce(
+                        (sum, item) => sum + item.price * item.quantity,
+                        0
+                      )
+                      .toFixed(2)}
+                    ₴
+                  </span>
+                </div>
+                {selectedOrder.deliveryType === "pickup" && (
+                  <div className="total-row discount">
+                    <span>Знижка (самовивіз -5%):</span>
+                    <span>
+                      -
+                      {(
+                        selectedOrder.items
+                          .reduce(
+                            (sum, item) => sum + item.price * item.quantity,
+                            0
+                          ) * 0.05
+                      ).toFixed(2)}
+                      ₴
+                    </span>
+                  </div>
+                )}
+                <div className="total-row final">
+                  <span>Загальна сума:</span>
+                  <span>{selectedOrder.totalPrice.toFixed(2)}₴</span>
+                </div>
               </div>
             </div>
 
-            <div className="order-details-section">
-              <h3>📋 Інформація про доставку</h3>
-              <p>
-                <strong>Тип:</strong>{" "}
-                {selectedOrder.deliveryType === "delivery"
-                  ? "Доставка"
-                  : "Самовивіз"}
-              </p>
-              <p>
-                <strong>Адреса:</strong> {selectedOrder.customerAddress}
-              </p>
-              <p>
-                <strong>Телефон:</strong> {selectedOrder.customerPhone}
-              </p>
-              {selectedOrder.comment && (
-                <p>
-                  <strong>Коментар:</strong> {selectedOrder.comment}
-                </p>
-              )}
+            <div className="modal-footer">
+              <button onClick={closeModal} className="close-modal-btn">
+                Закрити
+              </button>
             </div>
-
-            <div className="order-total-section">
-              <h3>Всього до сплати:</h3>
-              <h2 className="total-amount">
-                {selectedOrder.totalPrice.toFixed(2)}₴
-              </h2>
-            </div>
-
-            <button onClick={closeModal} className="close-modal-btn">
-              Закрити
-            </button>
           </div>
         </div>
       )}

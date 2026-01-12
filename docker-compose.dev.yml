@@ -17,6 +17,7 @@ services:
     volumes:
       - ./api/src:/usr/src/app/src
       - ./api/nodemon.json:/usr/src/app/nodemon.json
+      - ./api/uploads:/usr/src/app/uploads
     depends_on:
       - api_db
 
@@ -43,7 +44,7 @@ services:
     container_name: api_db_dev
     image: mongo:latest
     ports:
-      - '27017:27017'  # Додайте цей рядок!
+      - '27017:27017'
     volumes:
       - mongodb_api:/data/db
 

@@ -34,6 +34,7 @@ const orderSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
+        "pending", // Очікує підтвердження (новий статус)
         "processing", // В обробці
         "confirmed", // Прийнято
         "preparing", // Готується
@@ -42,7 +43,7 @@ const orderSchema = new mongoose.Schema(
         "completed", // Виконано (доставлено)
         "cancelled", // Скасовано
       ],
-      default: "processing",
+      default: "pending", // Змінено на pending
     },
     managerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     statusHistory: [
@@ -58,14 +59,10 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-// Додати запис в історію при зміні статусу
+// Видалити автоматичне додавання в історію при зміні статусу
+// Тепер історія буде оновлюватись тільки вручну в роутері
 orderSchema.pre("save", function (next) {
-  if (this.isModified("status")) {
-    this.statusHistory.push({
-      status: this.status,
-      timestamp: new Date(),
-    });
-  }
+  // Видалено автоматичне додавання в statusHistory
   next();
 });
 

@@ -19,6 +19,8 @@ export default function Menu() {
   const [cart, setCart] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
     // Завантажити кошик з localStorage
@@ -54,6 +56,8 @@ export default function Menu() {
   };
 
   const addToCart = (item) => {
+    if (!item.isAvailable) return;
+
     const existingItem = cart.find((i) => i._id === item._id);
     let newCart;
 
@@ -67,6 +71,18 @@ export default function Menu() {
 
     setCart(newCart);
     localStorage.setItem("cart", JSON.stringify(newCart));
+    
+    // Викликати кастомну подію для оновлення Header
+    window.dispatchEvent(new Event('cartUpdated'));
+
+    // Показати сповіщення
+    setToastMessage(`✓ "${item.name}" додано до кошика!`);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const handleAddToCart = (item) => {
+    addToCart(item);
   };
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -104,156 +120,140 @@ export default function Menu() {
 
   return (
     <div className="menu-page">
-      <Header
-        cartCount={cartCount}
-        onCartClick={() =>
-          alert(`У кошику ${cart.length} позицій (${cartCount} товарів)`)
-        }
-      />
+      <Header cartCount={cartCount} />
+
+      {/* Toast сповіщення */}
+      {showToast && (
+        <div className="toast-notification">
+          <div className="toast-content">
+            <img src="/icon/basket.png" alt="" className="toast-icon" />
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
 
       <div className="menu-container">
-        <aside className="menu-sidebar">
-          <h3>Категорії</h3>
+        <div className="menu-header">
+          <h1>Наше меню</h1>
+          <p className="menu-subtitle">Оберіть ваші улюблені страви</p>
+        </div>
+
+        {/* Фільтри */}
+        <div className="filters-section">
           <div className="category-filters">
-            {/* Категорія "Всі" */}
             <button
+              onClick={() => setSelectedCategory("all")}
               className={`category-btn ${
                 selectedCategory === "all" ? "active" : ""
               }`}
-              onClick={() => setSelectedCategory("all")}
-              style={{
-                borderColor: selectedCategory === "all" ? "#667eea" : "#e2e8f0",
-                backgroundColor:
-                  selectedCategory === "all" ? "#667eea20" : "white",
-              }}
             >
-              <span className="category-icon">🍱</span>
-              <span className="category-name">Всі товари</span>
-              <span className="category-count">{menuItems.length}</span>
+              Всі страви
             </button>
-
-            {/* Категорії з БД */}
             {categories.map((cat) => (
               <button
                 key={cat.key}
+                onClick={() => setSelectedCategory(cat.key)}
                 className={`category-btn ${
                   selectedCategory === cat.key ? "active" : ""
                 }`}
-                onClick={() => setSelectedCategory(cat.key)}
-                style={{
-                  borderColor:
-                    selectedCategory === cat.key ? cat.color : "#e2e8f0",
-                  backgroundColor:
-                    selectedCategory === cat.key ? `${cat.color}20` : "white",
-                }}
               >
-                <span className="category-icon">{cat.icon}</span>
-                <span className="category-name">{cat.label}</span>
-                <span className="category-count">
-                  {categoryStats[cat.key] || 0}
-                </span>
+                {cat.label}
               </button>
             ))}
           </div>
 
-          <div className="search-section">
-            <h3>Пошук</h3>
+          <div className="search-filter">
             <input
               type="text"
-              placeholder=" Знайти товар..."
+              placeholder="Пошук страв..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
             />
           </div>
-        </aside>
+        </div>
 
-        <main className="menu-main">
-          <div className="menu-top">
-            <h2>
-              {selectedCategoryData.icon} {selectedCategoryData.label}
-            </h2>
-            <p className="items-count">
-              Знайдено: <strong>{filteredItems.length}</strong> товарів
-            </p>
+        {/* Сітка товарів */}
+        {loading ? (
+          <div className="loading-state">Завантаження меню...</div>
+        ) : filteredItems.length === 0 ? (
+          <div className="empty-state">
+            <h3>Нічого не знайдено</h3>
+            <p>Спробуйте змінити фільтри або пошуковий запит</p>
           </div>
-
-          {loading ? (
-            <div className="loading">Завантаження...</div>
-          ) : (
-            <div className="menu-grid">
-              {filteredItems.map((item) => {
-                const itemCategory = getCategoryData(item.category);
-                const weightUnit =
-                  WEIGHT_UNITS[item.weightUnit] || WEIGHT_UNITS.g;
-
-                return (
-                  <div key={item._id} className="menu-item-card">
-                    <div
-                      className="item-image"
-                      onClick={() => navigate(`/product/${item._id}`)}
-                      style={{ cursor: "pointer" }}
-                      title="Переглянути деталі"
-                    >
-                      {item.image}
+        ) : (
+          <div className="menu-grid">
+            {filteredItems.map((item) => (
+              <div key={item._id} className="menu-card">
+                <div className="card-image">
+                  <span className="emoji-display">{item.image}</span>
+                  {!item.isAvailable && (
+                    <div className="unavailable-overlay">
+                      <span>Немає в наявності</span>
                     </div>
-                    <div className="item-info">
-                      <h3
-                        onClick={() => navigate(`/product/${item._id}`)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        {item.name}
-                      </h3>
-                      <span
-                        className="item-category"
-                        style={{ backgroundColor: itemCategory.color }}
-                      >
-                        {itemCategory.icon} {itemCategory.label}
+                  )}
+                </div>
+
+                <div className="card-content">
+                  <div className="card-header">
+                    <h3 className="card-title">{item.name}</h3>
+                    <span className="card-category">
+                      {categories.find((c) => c.key === item.category)?.label ||
+                        item.category}
+                    </span>
+                  </div>
+
+                  <p className="card-description">{item.description}</p>
+
+                  <div className="card-details">
+                    <div className="detail-item">
+                      <img
+                        src="/icon/scale.png"
+                        alt="Вага"
+                        className="detail-icon"
+                      />
+                      <span>
+                        {item.weight}
+                        {item.weightUnit || "г"}
                       </span>
-                      <p className="item-description">{item.description}</p>
-                      {item.weight && (
-                        <p className="item-weight">
-                          {weightUnit.icon} {item.weight}
-                          {weightUnit.short}
-                        </p>
-                      )}
-                      {item.ingredients && (
-                        <p className="item-ingredients">
-                          <strong>Інгредієнти:</strong> {item.ingredients}
-                        </p>
-                      )}
-                      <div className="item-footer">
-                        <span className="item-price">{item.price}₴</span>
-                        <div className="item-actions">
-                          <button
-                            onClick={() => navigate(`/product/${item._id}`)}
-                            className="details-btn"
-                          >
-                            👁️ Деталі
-                          </button>
-                          <button
-                            onClick={() => addToCart(item)}
-                            className="add-to-cart-btn"
-                          >
-                            + Додати
-                          </button>
-                        </div>
-                      </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
 
-          {!loading && filteredItems.length === 0 && (
-            <div className="no-results">
-              <div className="no-results-icon">🔍</div>
-              <h3>Нічого не знайдено</h3>
-              <p>Спробуйте змінити категорію або пошуковий запит</p>
-            </div>
-          )}
-        </main>
+                  <div className="card-footer">
+                    <div className="card-price">
+                      <span className="price-label">Ціна:</span>
+                      <span className="price-value">{item.price}₴</span>
+                    </div>
+
+                    <div className="card-actions">
+                      <button
+                        onClick={() => navigate(`/product/${item._id}`)}
+                        className="details-btn"
+                        title="Переглянути деталі"
+                      >
+                        {/* <img src="/icon/eye.png" alt="" /> */}
+                        Деталі
+                      </button>
+                      <button
+                        onClick={() => handleAddToCart(item)}
+                        disabled={!item.isAvailable}
+                        className="add-to-cart-btn"
+                        title={
+                          item.isAvailable
+                            ? "Додати в кошик"
+                            : "Немає в наявності"
+                        }
+                      >
+                        <img src="/icon/basket.png" alt="" />
+                        Додати
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

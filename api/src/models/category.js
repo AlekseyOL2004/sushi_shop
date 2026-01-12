@@ -13,11 +13,11 @@ const categorySchema = new mongoose.Schema({
   },
   icon: {
     type: String,
-    required: [true, "Icon is required"],
+    default: "🍱",
   },
-  color: {
+  imageUrl: {
     type: String,
-    required: [true, "Color is required"],
+    default: "/icon/no-image.png",
   },
   isActive: {
     type: Boolean,

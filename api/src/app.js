@@ -1,12 +1,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 const userRouter = require("./routers/user");
 const menuRouter = require("./routers/menu");
 const orderRouter = require("./routers/order");
 const reviewRouter = require("./routers/review");
 const categoryRouter = require("./routers/category");
 const statisticsRouter = require("./routers/statistics");
+const uploadRouter = require("./routers/upload");
 const { port, host, mongoURL } = require("./configuration/index");
 
 const app = express();
@@ -14,6 +16,9 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Статичні файли для завантажених зображень
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Логування запитів
 app.use((req, res, next) => {
@@ -33,6 +38,7 @@ app.use("/orders", orderRouter);
 app.use("/reviews", reviewRouter);
 app.use("/categories", categoryRouter);
 app.use("/statistics", statisticsRouter);
+app.use("/upload", uploadRouter);
 
 // 404 handler
 app.use((req, res) => {

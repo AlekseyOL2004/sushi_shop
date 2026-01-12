@@ -16,6 +16,8 @@ import Checkout from "./pages/Checkout";
 import OrdersManagement from "./pages/OrdersManagement";
 import MyOrders from "./pages/MyOrders";
 import OrdersStatistics from "./pages/OrdersStatistics";
+import ProductPage from "./pages/ProductPage";
+import Reviews from "./pages/Reviews";
 
 export default function App() {
   return (
@@ -33,11 +35,12 @@ export default function App() {
         <Route path="/products/create" element={<CreateProduct />} />
         <Route path="/products/edit/:productId" element={<EditProduct />} />
         <Route path="/products/:productId" element={<ProductDetails />} />
-        <Route path="/product/:productId" element={<PublicProductDetails />} />
+        <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/categories" element={<CategoriesManagement />} />
         <Route path="/orders/manage" element={<OrdersManagement />} />
         <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/orders/statistics" element={<OrdersStatistics />} />
+        <Route path="/reviews" element={<Reviews />} />
       </Routes>
     </Router>
   );

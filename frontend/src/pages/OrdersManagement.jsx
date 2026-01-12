@@ -6,13 +6,14 @@ import "./OrdersManagement.css";
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
 const STATUS_CONFIG = {
-  processing: { label: "В обробці", color: "#fbbf24", icon: "⏳" },
-  confirmed: { label: "Прийнято", color: "#60a5fa", icon: "✅" },
-  preparing: { label: "Готується", color: "#f97316", icon: "👨‍🍳" },
-  ready: { label: "Готово", color: "#a855f7", icon: "✨" },
-  delivering: { label: "Доставляється", color: "#3b82f6", icon: "🚚" },
-  completed: { label: "Виконано", color: "#22c55e", icon: "🎉" },
-  cancelled: { label: "Скасовано", color: "#ef4444", icon: "❌" },
+  pending: { label: "Очікує підтвердження", color: "#fbbf24", icon: "/icon/clock.png" },
+  processing: { label: "В обробці", color: "#f97316", icon: "/icon/clock.png" },
+  confirmed: { label: "Прийнято", color: "#60a5fa", icon: "/icon/done.png" },
+  preparing: { label: "Готується", color: "#f97316", icon: "/icon/chef.png" },
+  ready: { label: "Готово", color: "#a855f7", icon: "/icon/ready.png" },
+  delivering: { label: "Доставляється", color: "#3b82f6", icon: "/icon/delivery.png" },
+  completed: { label: "Виконано", color: "#22c55e", icon: "/icon/done.png" },
+  cancelled: { label: "Скасовано", color: "#ef4444", icon: "/icon/cancel.png" },
 };
 
 export default function OrdersManagement() {
@@ -21,9 +22,13 @@ export default function OrdersManagement() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
-  const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [newStatus, setNewStatus] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [detailsOrder, setDetailsOrder] = useState(null);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -72,8 +77,14 @@ export default function OrdersManagement() {
     setNewStatus("");
   };
 
+  const showSuccessToast = (message) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
   const handleStatusChange = async () => {
-    if (!selectedOrder || !newStatus) return;
+    if (!newStatus || !selectedOrder) return;
 
     try {
       const res = await fetch(
@@ -94,16 +105,16 @@ export default function OrdersManagement() {
         throw new Error(error.message);
       }
 
+      showSuccessToast(`Статус замовлення змінено на "${STATUS_CONFIG[newStatus].label}"`);
       await fetchOrders();
       closeModal();
-      alert("✅ Статус змінено успішно!");
     } catch (error) {
-      alert("❌ Помилка: " + error.message);
+      showSuccessToast(`Помилка: ${error.message}`);
     }
   };
 
   const getNextStatuses = (currentStatus, deliveryType) => {
-    const allStatuses = ["processing", "confirmed", "preparing"];
+    const allStatuses = ["pending", "processing", "confirmed", "preparing"];
 
     if (deliveryType === "pickup") {
       allStatuses.push("ready", "completed");
@@ -123,6 +134,23 @@ export default function OrdersManagement() {
     return order.status === filterStatus;
   });
 
+  const openDetailsModal = async (orderId) => {
+    try {
+      const res = await fetch(`${API_BASE}/orders/${orderId}`);
+      if (!res.ok) throw new Error("Failed to fetch order details");
+      const data = await res.json();
+      setDetailsOrder(data);
+      setShowDetailsModal(true);
+    } catch (error) {
+      showSuccessToast(`Помилка: ${error.message}`);
+    }
+  };
+
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
+    setDetailsOrder(null);
+  };
+
   if (!currentUser) return <div className="loading">Завантаження...</div>;
 
   return (
@@ -131,9 +159,13 @@ export default function OrdersManagement() {
 
       <div className="orders-content">
         <header className="orders-header">
-          <h1>📦 Управління замовленнями</h1>
+          <h1>
+            <img src="/icon/box2.png" alt="Замовлення" className="header-icon" />
+            Управління замовленнями
+          </h1>
           <button onClick={fetchOrders} className="refresh-btn">
-            🔄 Оновити
+            {/* <img src="/icon/refresh.png" alt="Оновити" /> */}
+            Оновити
           </button>
         </header>
 
@@ -155,8 +187,7 @@ export default function OrdersManagement() {
             </option>
             {Object.entries(STATUS_CONFIG).map(([key, config]) => (
               <option key={key} value={key}>
-                {config.icon} {config.label} (
-                {orders.filter((o) => o.status === key).length})
+                {config.label} ({orders.filter((o) => o.status === key).length})
               </option>
             ))}
           </select>
@@ -181,7 +212,7 @@ export default function OrdersManagement() {
                       backgroundColor: STATUS_CONFIG[order.status].color,
                     }}
                   >
-                    {STATUS_CONFIG[order.status].icon}{" "}
+                    {/* <img src={STATUS_CONFIG[order.status].icon} alt="" className="status-icon" /> */}
                     {STATUS_CONFIG[order.status].label}
                   </span>
                 </div>
@@ -189,23 +220,24 @@ export default function OrdersManagement() {
                 <div className="order-body">
                   <div className="order-info">
                     <p>
-                      <strong>👤 Клієнт:</strong> {order.customerName}
+                      <img src="/icon/profile.png" alt="" className="info-icon" />
+                      <strong>Клієнт:</strong> {order.customerName}
                     </p>
                     <p>
-                      <strong>📞 Телефон:</strong> {order.customerPhone}
+                      <img src="/icon/phone.png" alt="" className="info-icon" />
+                      <strong>Телефон:</strong> {order.customerPhone}
                     </p>
                     <p>
+                      <img src={order.deliveryType === "delivery" ? "/icon/delivery.png" : "/icon/delivery.png"} alt="" className="info-icon" />
                       <strong>
-                        {order.deliveryType === "delivery"
-                          ? "🏠 Адреса"
-                          : "🏪 Самовивіз"}
-                        :
+                        {order.deliveryType === "delivery" ? "Адреса" : "Самовивіз"}:
                       </strong>{" "}
                       {order.customerAddress}
                     </p>
                     {order.comment && (
                       <p>
-                        <strong>💬 Коментар:</strong> {order.comment}
+                        <img src="/icon/reviews.png" alt="" className="info-icon" />
+                        <strong>Коментар:</strong> {order.comment}
                       </p>
                     )}
                   </div>
@@ -231,7 +263,8 @@ export default function OrdersManagement() {
                     </div>
                     {order.deliveryType === "pickup" && (
                       <div className="discount-info">
-                        💰 Знижка -5% застосована
+                        {/* <img src="/icon/discount.png" alt="" /> */}
+                        Знижка -5% застосована
                       </div>
                     )}
                   </div>
@@ -241,19 +274,20 @@ export default function OrdersManagement() {
                       onClick={() => openStatusModal(order)}
                       className="change-status-btn"
                     >
-                      🔄 Змінити статус
+                      Змінити статус
                     </button>
                     <button
-                      onClick={() => navigate(`/orders/${order._id}`)}
+                      onClick={() => openDetailsModal(order._id)}
                       className="view-details-btn"
                     >
-                      👁️ Деталі
+                      Деталі
                     </button>
                   </div>
 
                   {order.managerId && (
                     <p className="manager-info">
-                      👨‍💼 Менеджер: {order.managerId.firstName}{" "}
+                      <img src="/icon/admin-panel.png" alt="" className="info-icon" />
+                      Менеджер: {order.managerId.firstName}{" "}
                       {order.managerId.lastName}
                     </p>
                   )}
@@ -309,7 +343,8 @@ export default function OrdersManagement() {
                     onChange={(e) => setNewStatus(e.target.value)}
                   />
                   <span>
-                    {STATUS_CONFIG[status].icon} {STATUS_CONFIG[status].label}
+                    {/* <img src={STATUS_CONFIG[status].icon} alt="" className="status-option-icon" /> */}
+                    {STATUS_CONFIG[status].label}
                   </span>
                 </label>
               ))}
@@ -317,13 +352,205 @@ export default function OrdersManagement() {
 
             <div className="modal-actions">
               <button onClick={handleStatusChange} className="confirm-btn">
-                ✅ Підтвердити
+                <img src="/icon/done.png" alt="" />
+                Підтвердити
               </button>
               <button onClick={closeModal} className="cancel-btn">
-                ❌ Скасувати
+                {/* <img src="/icon/cancel.png" alt="" /> */}
+                Скасувати
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Модалка деталей замовлення */}
+      {showDetailsModal && detailsOrder && (
+        <div className="modal-overlay" onClick={closeDetailsModal}>
+          <div className="modal-content-large" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Деталі замовлення #{detailsOrder._id.slice(-6).toUpperCase()}</h2>
+              <button onClick={closeDetailsModal} className="close-modal-btn-icon">
+                ✕
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {/* Історія статусів */}
+              <div className="details-section">
+                <h3>
+                  <img src="/icon/clock.png" alt="" className="section-icon" />
+                  Історія статусів
+                </h3>
+                <div className="status-timeline">
+                  {detailsOrder.statusHistory && detailsOrder.statusHistory.length > 0 ? (
+                    [...detailsOrder.statusHistory].reverse().map((history, idx) => (
+                      <div key={idx} className="timeline-item">
+                        <div
+                          className="timeline-marker"
+                          style={{
+                            backgroundColor: STATUS_CONFIG[history.status]?.color || "#718096",
+                          }}
+                        >
+                          {idx === 0 ? "●" : idx + 1}
+                        </div>
+                        <div className="timeline-content">
+                          <div className="timeline-status-name">
+                            {STATUS_CONFIG[history.status]?.label || history.status}
+                          </div>
+                          <div className="timeline-time">
+                            {new Date(history.timestamp).toLocaleString("uk-UA", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                          {history.updatedBy && (
+                            <div className="timeline-user">
+                              Оновлено менеджером
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="no-history">Історія статусів недоступна</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Інформація про клієнта */}
+              <div className="details-section">
+                <h3>
+                  <img src="/icon/profile.png" alt="" className="section-icon" />
+                  Інформація про клієнта
+                </h3>
+                <div className="details-grid">
+                  <div className="detail-item">
+                    <span className="detail-label">Ім'я:</span>
+                    <span className="detail-value">{detailsOrder.customerName}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Телефон:</span>
+                    <span className="detail-value">{detailsOrder.customerPhone}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Тип доставки:</span>
+                    <span className="detail-value">
+                      {detailsOrder.deliveryType === "delivery" ? "Доставка" : "Самовивіз"}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Адреса:</span>
+                    <span className="detail-value">{detailsOrder.customerAddress}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Товари */}
+              <div className="details-section">
+                <h3>
+                  <img src="/icon/box.png" alt="" className="section-icon" />
+                  Товари в замовленні
+                </h3>
+                <div className="details-items-list">
+                  {detailsOrder.items.map((item, idx) => (
+                    <div key={idx} className="details-item-row">
+                      <span className="item-name">{item.name}</span>
+                      <span className="item-quantity">× {item.quantity}</span>
+                      <span className="item-price">{item.price}₴</span>
+                      <span className="item-total">{(item.price * item.quantity).toFixed(2)}₴</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Додаткова інформація */}
+              {(detailsOrder.comment || detailsOrder.sticksType) && (
+                <div className="details-section">
+                  <h3>
+                    <img src="/icon/reviews.png" alt="" className="section-icon" />
+                    Додаткова інформація
+                  </h3>
+                  <div className="details-grid">
+                    {detailsOrder.sticksType && (
+                      <div className="detail-item">
+                        <span className="detail-label">Палички:</span>
+                        <span className="detail-value">
+                          {detailsOrder.sticksType === "learning" ? "Навчальні" : "Звичайні"}
+                        </span>
+                      </div>
+                    )}
+                    {detailsOrder.cutleryCount > 0 && (
+                      <div className="detail-item">
+                        <span className="detail-label">Кількість приборів:</span>
+                        <span className="detail-value">{detailsOrder.cutleryCount}</span>
+                      </div>
+                    )}
+                    {detailsOrder.comment && (
+                      <div className="detail-item full-width">
+                        <span className="detail-label">Коментар:</span>
+                        <span className="detail-value">{detailsOrder.comment}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Підсумок */}
+              <div className="details-total">
+                <div className="total-row">
+                  <span>Сума товарів:</span>
+                  <span>
+                    {detailsOrder.items.reduce(
+                      (sum, item) => sum + item.price * item.quantity,
+                      0
+                    ).toFixed(2)}₴
+                  </span>
+                </div>
+                {detailsOrder.deliveryType === "pickup" && (
+                  <div className="total-row discount">
+                    <span>Знижка (самовивіз -5%):</span>
+                    <span>
+                      -
+                      {(
+                        detailsOrder.items.reduce(
+                          (sum, item) => sum + item.price * item.quantity,
+                          0
+                        ) * 0.05
+                      ).toFixed(2)}₴
+                    </span>
+                  </div>
+                )}
+                <div className="total-row final">
+                  <span>Загальна сума:</span>
+                  <span>{detailsOrder.totalPrice.toFixed(2)}₴</span>
+                </div>
+              </div>
+
+              {detailsOrder.managerId && (
+                <div className="manager-badge">
+                  <img src="/icon/admin-panel.png" alt="" />
+                  Менеджер: {detailsOrder.managerId.firstName} {detailsOrder.managerId.lastName}
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button onClick={closeDetailsModal} className="close-details-btn">
+                Закрити
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success toast */}
+      {showToast && (
+        <div className="success-toast">
+          {toastMessage}
         </div>
       )}
     </div>

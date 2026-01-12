@@ -92,21 +92,34 @@ router.patch("/:id/status", async (req, res) => {
       return res.status(400).json({ message: "Invalid status" });
     }
 
+    // Оновити статус
     order.status = status;
     order.managerId = managerId;
 
-    order.statusHistory.push({
-      status,
-      timestamp: new Date(),
-      updatedBy: managerId,
-    });
+    // Додати в історію тільки якщо статус змінився
+    const lastHistoryStatus =
+      order.statusHistory.length > 0
+        ? order.statusHistory[order.statusHistory.length - 1].status
+        : null;
+
+    if (lastHistoryStatus !== status) {
+      order.statusHistory.push({
+        status,
+        timestamp: new Date(),
+        updatedBy: managerId,
+      });
+    }
 
     await order.save();
+
+    const updatedOrder = await Order.findById(order._id)
+      .populate("userId", "firstName lastName email")
+      .populate("managerId", "firstName lastName");
 
     console.log(
       `✅ Order ${order._id} status changed to ${status} by ${manager.email}`
     );
-    res.json(order);
+    res.json(updatedOrder);
   } catch (error) {
     console.error("Update order status error:", error);
     res.status(400).json({ message: error.message });

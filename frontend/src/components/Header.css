@@ -26,28 +26,22 @@
 
 .logo {
   font-size: 1.8rem;
-  font-weight: bold;
-  color: white;
-  margin: 0;
+  font-weight: 800;
+  background: #fff;
+  /* background: linear-gradient(135deg, #1c879e 0%, #00c2a5 100%); */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   cursor: pointer;
-  transition: all 0.3s ease;
+  margin: 0;
   white-space: nowrap;
-  flex-shrink: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.logo img {
-  width: 12px;
-  height: 12px;
-  filter: brightness(0) invert(1);
+  letter-spacing: -0.5px;
+  font-family: 'Arial', 'Helvetica', sans-serif;
+  transition: transform 0.3s;
 }
 
 .logo:hover {
   transform: scale(1.05);
-  color: #60b4a1;
 }
 
 .main-nav {
@@ -273,10 +267,12 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.15);
   }
@@ -326,6 +322,7 @@
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -368,7 +365,7 @@
     padding: 0.55rem 0.8rem;
     font-size: 0.88rem;
   }
-  
+
   .nav-link img {
     width: 10px;
     height: 10px;
@@ -382,7 +379,7 @@
     padding: 0.55rem 0.85rem;
     font-size: 0.85rem;
   }
-  
+
   .user-btn img,
   .admin-btn img,
   .logout-btn img,
@@ -391,11 +388,11 @@
     width: 10px;
     height: 10px;
   }
-  
+
   .admin-btn {
     padding: 0.55rem;
   }
-  
+
   .cart-icon img {
     width: 11px;
     height: 11px;
@@ -441,7 +438,7 @@
   .logo {
     font-size: 1.4rem;
   }
-  
+
   .logo img {
     width: 18px;
     height: 18px;
@@ -463,13 +460,13 @@
     font-size: 0.8rem;
     height: 36px;
   }
-  
+
   .admin-btn {
     padding: 0.5rem;
     height: 36px;
     min-width: 36px;
   }
-  
+
   .admin-btn img,
   .user-btn img,
   .logout-btn img,
@@ -507,7 +504,7 @@
   .logo {
     font-size: 1.2rem;
   }
-  
+
   .logo img {
     width: 16px;
     height: 16px;
@@ -542,7 +539,7 @@
     text-overflow: ellipsis;
     height: 32px;
   }
-  
+
   .user-btn img,
   .login-btn img,
   .register-btn img,
@@ -557,7 +554,7 @@
     height: 32px;
     min-width: 32px;
   }
-  
+
   .admin-btn img {
     width: 9px;
     height: 9px;
@@ -576,7 +573,7 @@
     padding: 0.55rem 0.8rem;
     font-size: 0.9rem;
   }
-  
+
   .cart-icon img {
     width: 12px;
     height: 12px;
@@ -601,7 +598,7 @@
     padding: 0.9rem 1rem;
     font-size: 0.95rem;
   }
-  
+
   .mobile-nav .nav-link img {
     width: 12px;
     height: 12px;
@@ -612,7 +609,7 @@
   .logo {
     font-size: 1.1rem;
   }
-  
+
   .logo img {
     width: 14px;
     height: 14px;
@@ -631,7 +628,7 @@
     height: 30px;
     min-width: 30px;
   }
-  
+
   .admin-btn img,
   .user-btn img,
   .login-btn img,
@@ -653,12 +650,12 @@
   .cart-btn {
     padding: 0.5rem 0.7rem;
   }
-  
+
   .cart-icon img {
     width: 10px;
     height: 10px;
   }
-  
+
   .cart-badge {
     width: 18px;
     height: 18px;

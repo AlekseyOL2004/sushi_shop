@@ -22,6 +22,8 @@ export default function Checkout() {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [orderNumber, setOrderNumber] = useState("");
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -133,13 +135,18 @@ export default function Checkout() {
 
       localStorage.removeItem("cart");
       setCart([]);
+      
+      // Викликати кастомну подію для оновлення Header
+      window.dispatchEvent(new Event('cartUpdated'));
 
-      alert(
-        `✅ Замовлення #${order._id
-          .slice(-6)
-          .toUpperCase()} успішно оформлено!\nОчікуваний час доставки: 30-40 хвилин`
-      );
-      navigate("/");
+      // Показати toast замість alert
+      setOrderNumber(order._id.slice(-6).toUpperCase());
+      setShowSuccessToast(true);
+
+      // Перенаправити на головну через 4 секунди
+      setTimeout(() => {
+        navigate("/");
+      }, 4000);
     } catch (error) {
       alert("❌ Помилка: " + error.message);
     } finally {
@@ -151,6 +158,9 @@ export default function Checkout() {
     const newCart = cart.filter((item) => item._id !== itemId);
     setCart(newCart);
     localStorage.setItem("cart", JSON.stringify(newCart));
+    
+    // Викликати кастомну подію для оновлення Header
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const updateQuantity = (itemId, newQuantity) => {
@@ -160,41 +170,96 @@ export default function Checkout() {
     );
     setCart(newCart);
     localStorage.setItem("cart", JSON.stringify(newCart));
+    
+    // Викликати кастомну подію для оновлення Header
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  // Перевірити чи потрібні палички (якщо є не тільки напої та десерти)
+  const needsCutlery = () => {
+    if (cart.length === 0) return false;
+    
+    // Категорії, для яких НЕ потрібні палички
+    const noCutleryCategories = ['drinks', 'desserts'];
+    
+    // Перевірити чи є хоч один товар, який НЕ є напоєм або десертом
+    return cart.some(item => !noCutleryCategories.includes(item.category));
+  };
+
   return (
     <div className="checkout-page">
       <Header cartCount={cartCount} />
+
+      {/* Success Toast */}
+      {showSuccessToast && (
+        <div className="success-toast-overlay">
+          <div className="success-toast-content">
+            <div className="success-icon-wrapper">
+              <img src="/icon/done.png" alt="Успіх" className="success-icon" />
+            </div>
+            <h2>Замовлення успішно оформлено!</h2>
+            <p className="order-number">Номер замовлення: #{orderNumber}</p>
+            <div className="success-details">
+              <div className="detail-item-success">
+                <img src="/icon/clock.png" alt="" />
+                <span>Очікуваний час доставки: 30-40 хвилин</span>
+              </div>
+              <div className="detail-item-success">
+                <img src="/icon/phone.png" alt="" />
+                <span>Ми зв'яжемося з вами найближчим часом</span>
+              </div>
+            </div>
+            <button 
+              onClick={() => navigate("/")} 
+              className="go-home-btn"
+            >
+              На головну
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="checkout-container">
         <h1>Оформлення замовлення</h1>
 
         {cart.length === 0 ? (
           <div className="empty-cart">
-            <div className="empty-icon">🛒</div>
+            <div className="empty-icon">
+              <img src="/icon/basket.png" alt="Порожній кошик" />
+            </div>
             <h2>Кошик порожній</h2>
             <p>Додайте товари з меню для оформлення замовлення</p>
             <button onClick={() => navigate("/menu")} className="go-menu-btn">
-              📋 Перейти до меню
+              <img src="/icon/menu.png" alt="" />
+              Перейти до меню
             </button>
           </div>
         ) : (
           <div className="checkout-grid">
+            {/* Форма замовлення (ліва сторона) */}
             <div className="checkout-form-section">
-              <form onSubmit={handleSubmit}>
+              <h2 className="section-title">
+                <img src="/icon/profile.png" alt="" className="section-icon" />
+                Інформація для доставки
+              </h2>
+
+              <form onSubmit={handleSubmit} className="checkout-form">
                 {/* ПІБ */}
                 <div className="form-section">
                   <div className="section-header">
-                    <h3>👤 Контактні дані</h3>
+                    <h3>
+                      <img src="/icon/profile.png" alt="" className="section-icon" />
+                      Контактні дані
+                    </h3>
                     {currentUser && (
                       <button
                         type="button"
                         onClick={loadUserData}
                         className="load-user-btn"
                       >
-                        👤 Взяти з профілю
+                        Взяти з профілю
                       </button>
                     )}
                   </div>
@@ -242,7 +307,10 @@ export default function Checkout() {
 
                 {/* Телефон */}
                 <div className="form-section">
-                  <h3>📞 Телефон</h3>
+                  <h3>
+                    <img src="/icon/phone.png" alt="" className="section-icon" />
+                    Телефон
+                  </h3>
                   <div className="form-group">
                     <input
                       type="tel"
@@ -260,7 +328,10 @@ export default function Checkout() {
 
                 {/* Доставка */}
                 <div className="form-section">
-                  <h3>🚚 Доставка</h3>
+                  <h3>
+                    <img src="/icon/delivery.png" alt="" className="section-icon" />
+                    Доставка
+                  </h3>
 
                   <div className="delivery-types">
                     <label
@@ -319,139 +390,175 @@ export default function Checkout() {
                 </div>
 
                 {/* Палички */}
-                <div className="form-section">
-                  <h3>🥢 Палички та прибори</h3>
+                {needsCutlery() && (
                   <div className="form-group">
-                    <label>Які палички Вам найбільше підходять?</label>
+                    <label htmlFor="sticksType">
+                      <img src="/icon/chopsticks.png" alt="" className="label-icon" />
+                      Які палички Вам найбільше підходять?
+                    </label>
                     <select
-                      name="sticksType"
+                      id="sticksType"
                       value={formData.sticksType}
-                      onChange={handleChange}
+                      onChange={(e) =>
+                        setFormData({ ...formData, sticksType: e.target.value })
+                      }
+                      required
                     >
-                      <option value="learning">🥢 Палички навчальні</option>
-                      <option value="regular">🥢 Палички звичайні</option>
+                      {[
+                        { value: "learning", label: "Палички навчальні" },
+                        { value: "regular", label: "Палички звичайні" },
+                      ].map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
+                )}
 
+                {/* Кількість приборів - показувати тільки якщо потрібні прибори */}
+                {needsCutlery() && (
                   <div className="form-group">
-                    <label>Кількість приборів</label>
+                    <label htmlFor="cutleryCount">
+                      <img src="/icon/chopsticks.png" alt="" className="label-icon" />
+                      Кількість приборів
+                    </label>
                     <input
                       type="number"
-                      name="cutleryCount"
-                      value={formData.cutleryCount}
-                      onChange={handleChange}
+                      id="cutleryCount"
                       min="0"
-                      required
+                      max="20"
+                      value={formData.cutleryCount}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          cutleryCount: parseInt(e.target.value) || 0,
+                        })
+                      }
+                      placeholder="Скільки комплектів приборів потрібно?"
                     />
-                    {errors.cutleryCount && (
-                      <span className="error">{errors.cutleryCount}</span>
-                    )}
+                    <small style={{ color: "#718096", fontSize: "0.85rem", marginTop: "0.5rem", display: "block" }}>
+                      За замовчуванням - 1 комплект на кожні 2 страви
+                    </small>
                   </div>
-                </div>
+                )}
 
                 {/* Коментар */}
-                <div className="form-section">
-                  <h3>💬 Коментар до замовлення</h3>
-                  <div className="form-group">
-                    <textarea
-                      name="comment"
-                      value={formData.comment}
-                      onChange={handleChange}
-                      rows="3"
-                      placeholder="Додаткові побажання..."
-                    />
-                  </div>
+                <div className="form-group">
+                  <label>Коментар до замовлення</label>
+                  <textarea
+                    name="comment"
+                    value={formData.comment}
+                    onChange={handleChange}
+                    rows="3"
+                    placeholder="Додаткові побажання..."
+                  />
                 </div>
 
+                {/* Кнопка оформлення */}
                 <button
                   type="submit"
                   className="submit-order-btn"
-                  disabled={loading}
+                  disabled={loading || cart.length === 0}
                 >
-                  {loading ? "⏳ Оформлення..." : "🛒 Оформити замовлення"}
+                  {loading ? (
+                    <>
+                      <span>Обробка...</span>
+                    </>
+                  ) : (
+                    <>
+                      <img src="/icon/done.png" alt="" />
+                      Оформити замовлення на {getTotalPrice().toFixed(2)}₴
+                    </>
+                  )}
                 </button>
               </form>
             </div>
 
-            {/* Права колонка - Кошик */}
-            <div className="cart-summary">
-              <h3>Ваше замовлення</h3>
+            {/* Товари в кошику (права сторона) */}
+            {cart.length > 0 && (
+              <div className="cart-items-section">
+                <h2 className="section-title">
+                  <img src="/icon/basket.png" alt="" className="section-icon" />
+                  Товари в кошику
+                </h2>
+                <div className="cart-items-list">
+                  {cart.map((item) => (
+                    <div key={item._id} className="cart-item">
+                      <div className="item-image">{item.image}</div>
+                      <div className="item-details">
+                        <h4>{item.name}</h4>
+                        <p className="item-price">
+                          {item.price}₴ × {item.quantity}
+                        </p>
+                      </div>
+                      <div className="item-quantity">
+                        <button
+                          onClick={() =>
+                            updateQuantity(item._id, item.quantity - 1)
+                          }
+                        >
+                          −
+                        </button>
+                        <span>{item.quantity}</span>
+                        <button
+                          onClick={() =>
+                            updateQuantity(item._id, item.quantity + 1)
+                          }
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(item._id)}
+                        className="remove-btn"
+                      >
+                        <img src="/icon/bin.png" alt="Видалити" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
 
-              <div className="cart-items">
-                {cart.map((item) => (
-                  <div key={item._id} className="cart-item">
-                    <div className="item-image">{item.image}</div>
-                    <div className="item-details">
-                      <h4>{item.name}</h4>
-                      <p className="item-price">
-                        {item.price}₴ × {item.quantity}
-                      </p>
-                    </div>
-                    <div className="item-quantity">
-                      <button
-                        onClick={() =>
-                          updateQuantity(item._id, item.quantity - 1)
-                        }
-                      >
-                        −
-                      </button>
-                      <span>{item.quantity}</span>
-                      <button
-                        onClick={() =>
-                          updateQuantity(item._id, item.quantity + 1)
-                        }
-                      >
-                        +
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => removeFromCart(item._id)}
-                      className="remove-btn"
-                    >
-                      🗑️
-                    </button>
+                {/* Summary */}
+                <div className="cart-summary">
+                  <div className="total-row">
+                    <span>Всього товарів:</span>
+                    <span>{cartCount} шт</span>
                   </div>
-                ))}
-              </div>
-
-              <div className="cart-totals">
-                <div className="total-row">
-                  <span>Всього товарів:</span>
-                  <span>{cartCount} шт</span>
-                </div>
-                <div className="total-row">
-                  <span>Сума:</span>
-                  <span>
-                    {cart
-                      .reduce(
-                        (sum, item) => sum + item.price * item.quantity,
-                        0
-                      )
-                      .toFixed(2)}
-                    ₴
-                  </span>
-                </div>
-                {deliveryType === "pickup" && (
-                  <div className="total-row discount">
-                    <span>Знижка (самовивіз -5%):</span>
+                  <div className="total-row">
+                    <span>Сума:</span>
                     <span>
-                      -
-                      {(
-                        cart.reduce(
+                      {cart
+                        .reduce(
                           (sum, item) => sum + item.price * item.quantity,
                           0
-                        ) * 0.05
-                      ).toFixed(2)}
+                        )
+                        .toFixed(2)}
                       ₴
                     </span>
                   </div>
-                )}
-                <div className="total-row final">
-                  <span>До сплати:</span>
-                  <span>{getTotalPrice().toFixed(2)}₴</span>
+                  {deliveryType === "pickup" && (
+                    <div className="total-row discount">
+                      <span>Знижка (самовивіз -5%):</span>
+                      <span>
+                        -
+                        {(
+                          cart.reduce(
+                            (sum, item) => sum + item.price * item.quantity,
+                            0
+                          ) * 0.05
+                        ).toFixed(2)}
+                        ₴
+                      </span>
+                    </div>
+                  )}
+                  <div className="total-row final">
+                    <span>До сплати:</span>
+                    <span>{getTotalPrice().toFixed(2)}₴</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

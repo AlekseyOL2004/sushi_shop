@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
+import Toast from "../components/Toast";
 import "./PublicProductDetails.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
@@ -19,6 +20,8 @@ export default function PublicProductDetails() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [cart, setCart] = useState([]);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -84,7 +87,8 @@ export default function PublicProductDetails() {
 
     setCart(newCart);
     localStorage.setItem("cart", JSON.stringify(newCart));
-    alert(`Додано ${quantity} × "${product.name}" в кошик!`);
+    setToastMessage(`Додано ${quantity} × "${product.name}" в кошик!`);
+    setShowToast(true);
   };
 
   if (loading || !product) {
@@ -100,6 +104,13 @@ export default function PublicProductDetails() {
         cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
         onCartClick={() => alert(`У кошику ${cart.length} товарів`)}
       />
+
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setShowToast(false)}
+        />
+      )}
 
       <div className="product-content">
         <div className="product-main-section">

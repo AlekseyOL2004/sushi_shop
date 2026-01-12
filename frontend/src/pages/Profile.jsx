@@ -6,10 +6,10 @@ import "./Profile.css";
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
 const ROLES = {
-  customer: { label: "Клієнт", color: "#48bb78" },
-  manager: { label: "Менеджер", color: "#4299e1" },
-  moderator: { label: "Модератор", color: "#ed8936" },
-  admin: { label: "Адміністратор", color: "#e53e3e" },
+  customer: { label: "Клієнт", color: "#1c879e" },
+  manager: { label: "Менеджер", color: "#00c2a5" },
+  moderator: { label: "Модератор", color: "#1c879e" },
+  admin: { label: "Адміністратор", color: "#00c2a5" },
 };
 
 export default function Profile() {

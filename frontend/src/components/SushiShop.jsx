@@ -17,15 +17,23 @@ export default function SushiShop() {
   const [menuItems, setMenuItems] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   // Завантажити меню та відгуки при монтуванні компонента
   useEffect(() => {
+    // Завантажити кошик з localStorage
+    const savedCart = localStorage.getItem("cart");
+    if (savedCart) {
+      setCart(JSON.parse(savedCart));
+    }
+
     const fetchData = async () => {
       try {
         setLoading(true);
         const [menuRes, reviewsRes] = await Promise.all([
           fetch(`${API_BASE}/menu`),
-          fetch(`${API_BASE}/reviews`),
+          fetch(`${API_BASE}/reviews?limit=3&approved=true`),
         ]);
 
         if (menuRes.ok) setMenuItems(await menuRes.json());
@@ -41,15 +49,26 @@ export default function SushiShop() {
 
   const addToCart = (item) => {
     const existingItem = cart.find((i) => i.id === item.id);
+    let newCart;
+    
     if (existingItem) {
-      setCart(
-        cart.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-        )
+      newCart = cart.map((i) =>
+        i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
       );
     } else {
-      setCart([...cart, { ...item, quantity: 1 }]);
+      newCart = [...cart, { ...item, quantity: 1 }];
     }
+
+    setCart(newCart);
+    localStorage.setItem("cart", JSON.stringify(newCart));
+    
+    // Викликати кастомну подію для оновлення Header
+    window.dispatchEvent(new Event('cartUpdated'));
+
+    // Показати toast сповіщення
+    setToastMessage(`✓ "${item.name}" додано до кошика!`);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   const removeFromCart = (itemId) => {
@@ -107,6 +126,81 @@ export default function SushiShop() {
   return (
     <div style={{ fontFamily: "Arial, sans-serif", color: "#333" }}>
       <Header cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} />
+
+      {/* Toast сповіщення */}
+      {showToast && (
+        <div
+          style={{
+            position: "fixed",
+            top: "100px",
+            right: "20px",
+            zIndex: 9999,
+            animation: "slideInRight 0.3s ease-out",
+          }}
+        >
+          <div
+            style={{
+              background: "linear-gradient(135deg, #1c879e 0%, #00c2a5 100%)",
+              color: "white",
+              padding: "1rem 1.5rem",
+              borderRadius: "10px",
+              boxShadow: "0 8px 24px rgba(28, 135, 158, 0.4)",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              fontWeight: 600,
+              fontSize: "1rem",
+              minWidth: "300px",
+              animation: "pulse 0.5s ease",
+            }}
+          >
+            <img
+              src="/icon/basket.png"
+              alt=""
+              style={{
+                width: "24px",
+                height: "24px",
+                filter: "brightness(0) invert(1)",
+              }}
+            />
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideInRight {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        
+        @keyframes pulse {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .toast-notification-home {
+            top: 80px !important;
+            right: 10px !important;
+            left: 10px !important;
+          }
+          .toast-content-home {
+            min-width: auto !important;
+            width: 100% !important;
+          }
+        }
+      `}</style>
 
       {/* Checkout Modal */}
       {showCheckout && (
@@ -220,7 +314,7 @@ export default function SushiShop() {
       <section
         style={{
           background: "linear-gradient(to right, #ffecd2 0%, #fcb69f 100%)",
-          padding: "5rem 2rem",
+          padding: "2rem 2rem",
           textAlign: "center",
         }}
       >
@@ -244,7 +338,19 @@ export default function SushiShop() {
           >
             Преміум якість • Безкоштовна доставка від 500₴ • Акції щодня
           </p>
-          <div style={{ fontSize: "5rem", margin: "1rem 0" }}>🍣🍱🥢</div>
+          <div style={{ margin: "2rem 0", display: "flex", justifyContent: "center" }}>
+            <img 
+              src="/icon/RollAndGo.png" 
+              alt="Roll & Go Logo" 
+              style={{ 
+                maxWidth: "400px", 
+                width: "15%", 
+                height: "auto",
+                borderRadius: "50%",
+                filter: "drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15))"
+              }} 
+            />
+          </div>
           <button
             onClick={() => navigate("/menu")}
             style={{
@@ -262,91 +368,78 @@ export default function SushiShop() {
             onMouseOver={(e) => (e.target.style.transform = "scale(1.05)")}
             onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
           >
-            Замовити зараз 🚀
+            Замовити зараз
           </button>
         </div>
       </section>
 
-      {/* Advantages */}
-      <section style={{ padding: "4rem 2rem", background: "#f7fafc" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <h3
-            style={{
-              textAlign: "center",
-              fontSize: "2.5rem",
-              marginBottom: "3rem",
-              color: "#2d3748",
-            }}
-          >
-            Чому обирають нас?
+      {/* Promotions */}
+      <section
+        style={{
+          padding: "1rem 2rem",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+        }}
+      >
+        <div
+          style={{ maxWidth: "1200px", margin: "0 auto", textAlign: "center" }}
+        >
+          <h3 style={{ fontSize: "2.5rem", marginBottom: "2rem" }}>
+            Акції тижня
           </h3>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
               gap: "2rem",
             }}
           >
-            {[
-              {
-                icon: "🐟",
-                title: "Свіжа риба",
-                text: "Щоденні поставки з перевірених постачальників",
-              },
-              {
-                icon: "⚡",
-                title: "Швидка доставка",
-                text: "Доставимо за 30-40 хвилин або знижка 20%",
-              },
-              {
-                icon: "👨‍🍳",
-                title: "Досвідчені шефи",
-                text: "Японські кухарі з 10+ років досвіду",
-              },
-              {
-                icon: "💳",
-                title: "Зручна оплата",
-                text: "Готівка, картка, LiqPay, Apple Pay",
-              },
-            ].map((item, i) => (
-              <div
-                key={i}
-                style={{
-                  background: "white",
-                  padding: "2rem",
-                  borderRadius: "15px",
-                  textAlign: "center",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                  transition: "transform 0.3s",
-                }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.transform = "translateY(-10px)")
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.transform = "translateY(0)")
-                }
-              >
-                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>
-                  {item.icon}
-                </div>
-                <h4
-                  style={{
-                    fontSize: "1.3rem",
-                    margin: "0 0 0.5rem",
-                    color: "#2d3748",
-                  }}
-                >
-                  {item.title}
-                </h4>
-                <p style={{ color: "#718096", margin: 0 }}>{item.text}</p>
-              </div>
-            ))}
+            <div
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                padding: "2rem",
+                borderRadius: "15px",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h4 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
+                Друга доставка -50%
+              </h4>
+              <p>При замовленні на суму від 800₴</p>
+            </div>
+            <div
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                padding: "2rem",
+                borderRadius: "15px",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h4 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
+                Безкоштовна доставка
+              </h4>
+              <p>Для всіх замовлень від 500₴</p>
+            </div>
+            <div
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                padding: "2rem",
+                borderRadius: "15px",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h4 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
+                Сет дня -30%
+              </h4>
+              <p>Щодня новий сет зі знижкою</p>
+            </div>
           </div>
         </div>
       </section>
 
+
       {/* Popular Items */}
-      <section id="menu" style={{ padding: "4rem 2rem" }}>
+      <section id="menu" style={{ padding: "2rem 2rem" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <h3
             style={{
@@ -463,81 +556,90 @@ export default function SushiShop() {
         </div>
       </section>
 
-      {/* Promotions */}
-      <section
-        style={{
-          padding: "4rem 2rem",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          color: "white",
-        }}
-      >
-        <div
-          style={{ maxWidth: "1200px", margin: "0 auto", textAlign: "center" }}
-        >
-          <h3 style={{ fontSize: "2.5rem", marginBottom: "2rem" }}>
-            🎉 Акції тижня
-          </h3>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "2rem",
-            }}
-          >
-            <div
-              style={{
-                background: "rgba(255,255,255,0.1)",
-                padding: "2rem",
-                borderRadius: "15px",
-                backdropFilter: "blur(10px)",
-              }}
-            >
-              <h4 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
-                Друга доставка -50%
-              </h4>
-              <p>При замовленні на суму від 800₴</p>
-            </div>
-            <div
-              style={{
-                background: "rgba(255,255,255,0.1)",
-                padding: "2rem",
-                borderRadius: "15px",
-                backdropFilter: "blur(10px)",
-              }}
-            >
-              <h4 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
-                Безкоштовна доставка
-              </h4>
-              <p>Для всіх замовлень від 500₴</p>
-            </div>
-            <div
-              style={{
-                background: "rgba(255,255,255,0.1)",
-                padding: "2rem",
-                borderRadius: "15px",
-                backdropFilter: "blur(10px)",
-              }}
-            >
-              <h4 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
-                Сет дня -30%
-              </h4>
-              <p>Щодня новий сет зі знижкою</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Delivery Info */}
-      <section
-        id="delivery"
-        style={{ padding: "4rem 2rem", background: "#f7fafc" }}
-      >
+      {/* Advantages */}
+      <section style={{ padding: "1rem 2rem", background: "#f7fafc" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <h3
             style={{
               textAlign: "center",
               fontSize: "2.5rem",
               marginBottom: "3rem",
+              color: "#2d3748",
+            }}
+          >
+            Чому обирають нас?
+          </h3>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+              gap: "2rem",
+            }}
+          >
+            {[
+              {
+                title: "Свіжа риба",
+                text: "Щоденні поставки з перевірених постачальників",
+              },
+              {
+                title: "Швидка доставка",
+                text: "Доставимо за 30-40 хвилин або знижка 20%",
+              },
+              {
+                title: "Досвідчені шефи",
+                text: "Японські кухарі з 10+ років досвіду",
+              },
+              {
+                title: "Зручна оплата",
+                text: "Готівка, картка, LiqPay, Apple Pay",
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                style={{
+                  background: "white",
+                  padding: "2rem",
+                  borderRadius: "15px",
+                  textAlign: "center",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                  transition: "transform 0.3s",
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.transform = "translateY(-10px)")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.transform = "translateY(0)")
+                }
+              >
+                <h4
+                  style={{
+                    fontSize: "1.3rem",
+                    margin: "0 0 0.5rem",
+                    color: "#2d3748",
+                  }}
+                >
+                  {item.title}
+                </h4>
+                <p style={{ color: "#718096", margin: 0 }}>{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      
+
+      {/* Delivery Info */}
+      <section
+        id="delivery"
+        style={{ padding: "1rem 2rem", background: "#f7fafc" }}
+      >
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <h3
+            style={{
+              textAlign: "center",
+              fontSize: "2.5rem",
+              marginBottom: "1rem",
               color: "#2d3748",
             }}
           >
@@ -558,13 +660,13 @@ export default function SushiShop() {
                   color: "#667eea",
                 }}
               >
-                🚗 Доставка
+                Доставка
               </h4>
               <ul style={{ lineHeight: "1.8", color: "#4a5568" }}>
                 <li>Безкоштовно від 500₴</li>
                 <li>30-40 хвилин по Києву</li>
                 <li>Доставка в область - від 80₴</li>
-                <li>Відстежування замовлення онлайн</li>
+                {/* <li>Відстежування замовлення онлайн</li> */}
               </ul>
             </div>
             <div>
@@ -575,13 +677,13 @@ export default function SushiShop() {
                   color: "#667eea",
                 }}
               >
-                💳 Оплата
+                Оплата
               </h4>
               <ul style={{ lineHeight: "1.8", color: "#4a5568" }}>
                 <li>Готівка кур'єру</li>
-                <li>Картою онлайн (Visa, MasterCard)</li>
-                <li>LiqPay, Apple Pay, Google Pay</li>
-                <li>Безпечні платежі 🔒</li>
+                <li>Картою кур'єру (Visa, MasterCard)</li>
+                {/* <li>LiqPay, Apple Pay, Google Pay</li> */}
+                <li>Безпечні платежі</li>
               </ul>
             </div>
             <div>
@@ -592,13 +694,13 @@ export default function SushiShop() {
                   color: "#667eea",
                 }}
               >
-                ⏰ Графік роботи
+                Графік роботи
               </h4>
               <ul style={{ lineHeight: "1.8", color: "#4a5568" }}>
-                <li>Пн-Чт: 10:00 - 23:00</li>
+                <li>Пн-Чт: 10:00 - 22:00</li>
                 <li>Пт-Сб: 10:00 - 01:00</li>
                 <li>Неділя: 11:00 - 23:00</li>
-                <li>Без вихідних! 🎌</li>
+                {/* <li>Без вихідних!</li> */}
               </ul>
             </div>
           </div>
@@ -606,67 +708,134 @@ export default function SushiShop() {
       </section>
 
       {/* Reviews */}
-      <section id="reviews" style={{ padding: "4rem 2rem" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <h3
-            style={{
-              textAlign: "center",
-              fontSize: "2.5rem",
-              marginBottom: "3rem",
-              color: "#2d3748",
-            }}
-          >
-            Відгуки клієнтів
-          </h3>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "2rem",
-            }}
-          >
-            {reviews.map((review) => (
-              <div
-                key={review._id}
+      {reviews.length > 0 && (
+        <section id="reviews" style={{ padding: "4rem 2rem" }}>
+          <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "3rem" }}>
+              <h3
                 style={{
-                  background: "white",
-                  padding: "2rem",
-                  borderRadius: "15px",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                  fontSize: "2.5rem",
+                  margin: 0,
+                  color: "#2d3748",
                 }}
               >
-                <div style={{ marginBottom: "1rem" }}>
-                  {[...Array(review.rating)].map((_, i) => (
-                    <span
-                      key={i}
-                      style={{ color: "#fbbf24", fontSize: "1.5rem" }}
-                    >
-                      ⭐
-                    </span>
-                  ))}
-                </div>
-                <p
+                Відгуки клієнтів
+              </h3>
+              <button
+                onClick={() => navigate("/reviews")}
+                style={{
+                  background: "linear-gradient(135deg, #1c879e 0%, #00c2a5 100%)",
+                  color: "white",
+                  border: "none",
+                  padding: "1rem 2rem",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  fontSize: "1rem",
+                  transition: "all 0.3s",
+                  boxShadow: "0 4px 15px rgba(28, 135, 158, 0.3)",
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.transform = "translateY(-2px)";
+                  e.target.style.boxShadow = "0 6px 20px rgba(28, 135, 158, 0.4)";
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.transform = "translateY(0)";
+                  e.target.style.boxShadow = "0 4px 15px rgba(28, 135, 158, 0.3)";
+                }}
+              >
+                Всі відгуки →
+              </button>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gap: "2rem",
+              }}
+            >
+              {reviews.map((review) => (
+                <div
+                  key={review._id}
                   style={{
-                    color: "#4a5568",
-                    fontStyle: "italic",
-                    marginBottom: "1rem",
+                    background: "white",
+                    padding: "2rem",
+                    borderRadius: "15px",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                    border: "2px solid transparent",
+                    transition: "all 0.3s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = "translateY(-5px)";
+                    e.currentTarget.style.boxShadow = "0 8px 30px rgba(28, 135, 158, 0.15)";
+                    e.currentTarget.style.borderColor = "rgba(28, 135, 158, 0.2)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.08)";
+                    e.currentTarget.style.borderColor = "transparent";
                   }}
                 >
-                  "{review.text}"
-                </p>
-                <p style={{ fontWeight: "bold", color: "#2d3748" }}>
-                  — {review.name}
-                </p>
-              </div>
-            ))}
+                  <div style={{ marginBottom: "1rem" }}>
+                    {[...Array(review.rating)].map((_, i) => (
+                      <span
+                        key={i}
+                        style={{ color: "#fbbf24", fontSize: "1.5rem" }}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <p
+                    style={{
+                      color: "#4a5568",
+                      fontStyle: "italic",
+                      marginBottom: "1rem",
+                      lineHeight: "1.6",
+                    }}
+                  >
+                    "{review.text}"
+                  </p>
+                  <p style={{ fontWeight: "bold", color: "#2d3748" }}>
+                    — {review.name}
+                  </p>
+                  {review.products && review.products.length > 0 && (
+                    <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid #e2e8f0" }}>
+                      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                        {review.products.map((product) => (
+                          <span
+                            key={product._id}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "0.25rem",
+                              padding: "0.25rem 0.5rem",
+                              background: "linear-gradient(135deg, rgba(28, 135, 158, 0.1) 0%, rgba(0, 194, 165, 0.1) 100%)",
+                              border: "1px solid rgba(28, 135, 158, 0.2)",
+                              borderRadius: "12px",
+                              fontSize: "0.8rem",
+                              color: "#1c879e",
+                              fontWeight: "600",
+                            }}
+                          >
+                            <span style={{ fontSize: "1rem" }}>{product.image}</span>
+                            {product.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Footer */}
       <footer
         id="contacts"
-        style={{ background: "#2d3748", color: "white", padding: "3rem 2rem" }}
+        style={{ background: "#2d3748", color: "white", padding: "1rem" }}
       >
         <div
           style={{
@@ -679,7 +848,7 @@ export default function SushiShop() {
         >
           <div>
             <h4 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
-              🍱 Roll & Go
+              Roll & Go
             </h4>
             <p style={{ color: "#cbd5e0" }}>
               Найсвіжіші суші в Києві з 2015 року
@@ -689,35 +858,81 @@ export default function SushiShop() {
             <h4 style={{ fontSize: "1.3rem", marginBottom: "1rem" }}>
               Контакти
             </h4>
-            <p style={{ color: "#cbd5e0" }}>📞 +38 (044) 123-45-67</p>
-            <p style={{ color: "#cbd5e0" }}>📧 info@rollandgo.ua</p>
-            <p style={{ color: "#cbd5e0" }}>📍 Київ, вул. Хрещатик, 1</p>
+            <p style={{ color: "#cbd5e0", margin: "0.5rem 0" }}>
+               +38 (044) 123-45-67
+            </p>
+            <p style={{ color: "#cbd5e0", margin: "0.5rem 0" }}>
+               info@rollandgo.ua
+            </p>
+            <p style={{ color: "#cbd5e0", margin: "0.5rem 0" }}>
+               Київ, вул. Хрещатик, 1
+            </p>
           </div>
           <div>
             <h4 style={{ fontSize: "1.3rem", marginBottom: "1rem" }}>
               Соціальні мережі
             </h4>
-            <div style={{ display: "flex", gap: "1rem", fontSize: "2rem" }}>
-              <a href="#" style={{ color: "white" }}>
-                📘
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <a 
+                href="#" 
+                style={{ 
+                  color: "#cbd5e0", 
+                  textDecoration: "none",
+                  fontSize: "1rem",
+                  transition: "color 0.3s"
+                }}
+                onMouseOver={(e) => e.target.style.color = "white"}
+                onMouseOut={(e) => e.target.style.color = "#cbd5e0"}
+              >
+                 Instagram
               </a>
-              <a href="#" style={{ color: "white" }}>
-                📷
+              <a 
+                href="#" 
+                style={{ 
+                  color: "#cbd5e0", 
+                  textDecoration: "none",
+                  fontSize: "1rem",
+                  transition: "color 0.3s"
+                }}
+                onMouseOver={(e) => e.target.style.color = "white"}
+                onMouseOut={(e) => e.target.style.color = "#cbd5e0"}
+              >
+                 Facebook
               </a>
-              <a href="#" style={{ color: "white" }}>
-                🐦
+              <a 
+                href="#" 
+                style={{ 
+                  color: "#cbd5e0", 
+                  textDecoration: "none",
+                  fontSize: "1rem",
+                  transition: "color 0.3s"
+                }}
+                onMouseOver={(e) => e.target.style.color = "white"}
+                onMouseOut={(e) => e.target.style.color = "#cbd5e0"}
+              >
+                 Twitter
               </a>
-              <a href="#" style={{ color: "white" }}>
-                📱
-              </a>
+              {/* <a 
+                href="#" 
+                style={{ 
+                  color: "#cbd5e0", 
+                  textDecoration: "none",
+                  fontSize: "1rem",
+                  transition: "color 0.3s"
+                }}
+                onMouseOver={(e) => e.target.style.color = "white"}
+                onMouseOut={(e) => e.target.style.color = "#cbd5e0"}
+              >
+                📱 TikTok
+              </a> */}
             </div>
           </div>
         </div>
         <div
           style={{
             textAlign: "center",
-            marginTop: "2rem",
-            paddingTop: "2rem",
+            marginTop: "1rem",
+            paddingTop: "1rem",
             borderTop: "1px solid #4a5568",
             color: "#cbd5e0",
           }}

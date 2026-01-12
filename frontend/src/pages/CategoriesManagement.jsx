@@ -5,34 +5,6 @@ import "./CategoriesManagement.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
-const EMOJI_OPTIONS = [
-  "🍱",
-  "🍣",
-  "🍤",
-  "🍙",
-  "🍜",
-  "🥤",
-  "🍰",
-  "🎁",
-  "🥢",
-  "🍵",
-  "🍲",
-  "🍛",
-  "🥗",
-  "🍕",
-  "🍔",
-];
-const COLOR_OPTIONS = [
-  { value: "#667eea", label: "Фіолетовий" },
-  { value: "#48bb78", label: "Зелений" },
-  { value: "#ed8936", label: "Помаранчевий" },
-  { value: "#e53e3e", label: "Червоний" },
-  { value: "#4299e1", label: "Синій" },
-  { value: "#9f7aea", label: "Пурпурний" },
-  { value: "#f6ad55", label: "Жовтий" },
-  { value: "#fc8181", label: "Рожевий" },
-];
-
 export default function CategoriesManagement() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
@@ -43,10 +15,12 @@ export default function CategoriesManagement() {
   const [formData, setFormData] = useState({
     key: "",
     label: "",
-    icon: "🍱",
-    color: "#667eea",
+    icon: "",
+    imageUrl: "",
     isActive: true,
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -85,20 +59,26 @@ export default function CategoriesManagement() {
       setFormData({
         key: category.key,
         label: category.label,
-        icon: category.icon,
-        color: category.color,
+        icon: category.icon || "",
+        imageUrl: category.imageUrl || "",
         isActive: category.isActive,
       });
+      // Додаємо API_BASE до imageUrl для preview
+      const previewUrl = category.imageUrl?.startsWith('/uploads/')
+        ? `${API_BASE}${category.imageUrl}`
+        : category.imageUrl || "/icon/no-image.png";
+      setImagePreview(previewUrl);
     } else {
-      setEditingCategory(null);
       setFormData({
         key: "",
         label: "",
-        icon: "🍱",
-        color: "#667eea",
+        icon: "",
+        imageUrl: "",
         isActive: true,
       });
+      setImagePreview("/icon/no-image.png");
     }
+    setImageFile(null);
     setErrors({});
     setShowModal(true);
   };
@@ -124,48 +104,77 @@ export default function CategoriesManagement() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          image: "Розмір файлу не повинен перевищувати 5MB",
+        }));
+        return;
+      }
+
+      if (!file.type.startsWith("image/")) {
+        setErrors((prev) => ({
+          ...prev,
+          image: "Оберіть файл зображення",
+        }));
+        return;
+      }
+
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setErrors((prev) => ({ ...prev, image: "" }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
     setLoading(true);
     try {
       const categoryData = {
-        ...formData,
+        key: formData.key.toLowerCase(),
+        label: formData.label,
+        icon: formData.icon || "",
+        imageUrl: formData.imageUrl || "",
+        isActive: formData.isActive,
         adminId: currentUser._id,
         adminRole: currentUser.role,
       };
 
-      let res;
-      if (editingCategory) {
-        res = await fetch(`${API_BASE}/categories/${editingCategory._id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(categoryData),
-        });
-      } else {
-        res = await fetch(`${API_BASE}/categories`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(categoryData),
-        });
-      }
+      const url = editingCategory
+        ? `${API_BASE}/categories/${editingCategory._id}`
+        : `${API_BASE}/categories`;
+
+      const res = await fetch(url, {
+        method: editingCategory ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(categoryData),
+      });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Помилка збереження категорії");
+        const error = await res.json();
+        throw new Error(error.message);
       }
 
+      await fetchCategories();
+      setShowModal(false);
+      setEditingCategory(null);
+      setImageFile(null);
+      setImagePreview("");
       setSuccessMessage(
         editingCategory
-          ? "✅ Категорію успішно оновлено!"
-          : "✅ Категорію успішно створено!"
+          ? "Категорію успішно оновлено!"
+          : "Категорію успішно створено!"
       );
       setTimeout(() => setSuccessMessage(""), 3000);
-
-      await fetchCategories();
-      closeModal();
     } catch (error) {
       setErrors({ general: error.message });
     } finally {
@@ -233,10 +242,18 @@ export default function CategoriesManagement() {
 
       <div className="categories-content">
         <header className="categories-header-sub">
-          <h1>Управління категоріями</h1>
-          <button onClick={() => openModal()} className="create-btn">
-            ➕ Створити категорію
-          </button>
+          <div className="header-title-section">
+            <img src="/icon/category.png" alt="" className="header-icon" />
+            <h1>Управління категоріями</h1>
+          </div>
+          <div className="header-actions">
+            <button onClick={() => navigate(-1)} className="back-btn-cat">
+              Назад
+            </button>
+            <button onClick={() => openModal()} className="create-btn-cat">
+              Створити категорію
+            </button>
+          </div>
         </header>
 
         {successMessage && (
@@ -264,28 +281,16 @@ export default function CategoriesManagement() {
           ) : (
             <div className="categories-grid">
               {categories.map((category) => (
-                <div key={category._id} className="category-card">
-                  <div
-                    className="category-icon-large"
-                    style={{ backgroundColor: `${category.color}20` }}
-                  >
-                    {category.icon}
-                  </div>
-                  <div className="category-info">
+                <div key={category._id} className="category-card-simple">
+                  <div className="category-info-simple">
                     <h3>{category.label}</h3>
                     <code className="category-key">{category.key}</code>
-                    <div
-                      className="category-color-badge"
-                      style={{ backgroundColor: category.color }}
-                    >
-                      {category.color}
-                    </div>
                     <span
                       className={`category-status ${
                         category.isActive ? "active" : "inactive"
                       }`}
                     >
-                      {category.isActive ? "✅ Активна" : "❌ Неактивна"}
+                      {category.isActive ? "Активна" : "Неактивна"}
                     </span>
                   </div>
                   <div className="category-actions">
@@ -293,14 +298,14 @@ export default function CategoriesManagement() {
                       onClick={() => openModal(category)}
                       className="edit-btn"
                     >
-                      ✏️ Редагувати
+                      Редагувати
                     </button>
                     {currentUser.role === "admin" && (
                       <button
                         onClick={() => handleDelete(category)}
                         className="delete-btn"
                       >
-                        🗑️ Видалити
+                        Видалити
                       </button>
                     )}
                   </div>
@@ -313,7 +318,7 @@ export default function CategoriesManagement() {
             <div className="no-results">
               <p>Категорій не знайдено</p>
               <button onClick={() => openModal()} className="create-btn-large">
-                ➕ Створити першу категорію
+                Створити першу категорію
               </button>
             </div>
           )}
@@ -330,15 +335,18 @@ export default function CategoriesManagement() {
 
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                  <label>Ключ категорії * (тільки a-z та _)</label>
+                  <label>
+                    Ключ категорії * (тільки a-z та -)
+                  </label>
                   <input
                     type="text"
                     name="key"
                     value={formData.key}
                     onChange={handleChange}
-                    placeholder="rolls"
                     disabled={!!editingCategory}
                     required
+                    pattern="[a-z-]+"
+                    placeholder="rolls"
                   />
                   {errors.key && <span className="error">{errors.key}</span>}
                 </div>
@@ -350,51 +358,15 @@ export default function CategoriesManagement() {
                     name="label"
                     value={formData.label}
                     onChange={handleChange}
-                    placeholder="Роли"
                     required
+                    placeholder="Роли"
                   />
                   {errors.label && (
                     <span className="error">{errors.label}</span>
                   )}
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Іконка</label>
-                    <select
-                      name="icon"
-                      value={formData.icon}
-                      onChange={handleChange}
-                    >
-                      {EMOJI_OPTIONS.map((emoji) => (
-                        <option key={emoji} value={emoji}>
-                          {emoji}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Колір</label>
-                    <select
-                      name="color"
-                      value={formData.color}
-                      onChange={handleChange}
-                    >
-                      {COLOR_OPTIONS.map((color) => (
-                        <option key={color.value} value={color.value}>
-                          {color.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div
-                      className="color-preview"
-                      style={{ backgroundColor: formData.color }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div className="form-group checkbox-group">
+                <div className="checkbox-group">
                   <label className="checkbox-label">
                     <input
                       type="checkbox"
@@ -402,34 +374,43 @@ export default function CategoriesManagement() {
                       checked={formData.isActive}
                       onChange={handleChange}
                     />
-                    <span>Категорія активна</span>
+                    Категорія активна
                   </label>
                 </div>
 
                 {errors.general && (
-                  <div className="error-message">❌ {errors.general}</div>
+                  <div className="error-message">{errors.general}</div>
                 )}
 
                 <div className="preview-section">
                   <h4>Попередній перегляд</h4>
-                  <div
-                    className="preview-badge"
-                    style={{ backgroundColor: formData.color }}
-                  >
-                    {formData.icon} {formData.label}
+                  <div className="preview-card-simple">
+                    <div className="preview-info-simple">
+                      <h3>{formData.label || "Назва категорії"}</h3>
+                      <code className="category-key">
+                        {formData.key || "key"}
+                      </code>
+                      <span
+                        className={`category-status ${
+                          formData.isActive ? "active" : "inactive"
+                        }`}
+                      >
+                        {formData.isActive ? "Активна" : "Неактивна"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
                 <div className="modal-actions">
                   <button type="submit" className="save-btn" disabled={loading}>
-                    {loading ? "⏳ Збереження..." : "💾 Зберегти"}
+                    {loading ? "Збереження..." : "Зберегти"}
                   </button>
                   <button
                     type="button"
                     onClick={closeModal}
                     className="cancel-btn"
                   >
-                    ❌ Скасувати
+                    Скасувати
                   </button>
                 </div>
               </form>

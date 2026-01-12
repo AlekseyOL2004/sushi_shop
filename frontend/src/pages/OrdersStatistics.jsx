@@ -6,9 +6,10 @@ import "./OrdersStatistics.css";
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
 const STATUS_CONFIG = {
-  pending: { label: "Очікує", color: "#FFA500", icon: "⏳" },
+  pending: { label: "Очікує підтвердження", color: "#fbbf24", icon: "⏳" },
+  processing: { label: "В обробці", color: "#f97316", icon: "⏳" },
   confirmed: { label: "Підтверджено", color: "#4299e1", icon: "✓" },
-  preparing: { label: "Готується", color: "#9f7aea", icon: "👨‍🍳" },
+  preparing: { label: "Готується", color: "#f97316", icon: "👨‍🍳" },
   ready: { label: "Готово", color: "#48bb78", icon: "✓✓" },
   delivering: { label: "Доставляється", color: "#ed8936", icon: "🚗" },
   completed: { label: "Виконано", color: "#38a169", icon: "✓✓✓" },
@@ -169,6 +170,72 @@ export default function OrdersStatistics() {
     const maxValue = Math.max(...data.map((d) => d.count), 1);
     const chartHeight = 250;
 
+    // Якщо тільки одна точка даних, показуємо спрощений графік
+    if (data.length === 1) {
+      return (
+        <div className="line-chart-container">
+          <div className="chart-area">
+            <div className="chart-grid-lines">
+              {[0, 25, 50, 75, 100].map((percent) => (
+                <div
+                  key={percent}
+                  className="grid-line"
+                  style={{ bottom: `${percent}%` }}
+                >
+                  <span className="grid-value">
+                    {Math.round((maxValue * percent) / 100)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="chart-content">
+              <svg
+                className="chart-svg"
+                viewBox="0 0 1000 250"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <defs>
+                  <linearGradient
+                    id="lineGradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="0%"
+                  >
+                    <stop offset="0%" stopColor="#1c879e" />
+                    <stop offset="100%" stopColor="#00c2a5" />
+                  </linearGradient>
+                </defs>
+
+                <circle
+                  cx={500}
+                  cy={chartHeight - (data[0].count / maxValue) * chartHeight}
+                  r="8"
+                  fill="white"
+                  stroke="#1c879e"
+                  strokeWidth="3"
+                />
+                <circle
+                  cx={500}
+                  cy={chartHeight - (data[0].count / maxValue) * chartHeight}
+                  r="5"
+                  fill="#1c879e"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <div className="chart-labels">
+            <div className="chart-label-item">
+              <div className="label-value">{data[0].count}</div>
+              <div className="label-text">{data[0].label}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="line-chart-container">
         <div className="chart-area">
@@ -223,9 +290,8 @@ export default function OrdersStatistics() {
                   M 0,${chartHeight}
                   ${data
                     .map((item, index) => {
-                      const x = (index / (data.length - 1)) * 1000;
-                      const y =
-                        chartHeight - (item.count / maxValue) * chartHeight;
+                      const x = ((index / Math.max(data.length - 1, 1)) * 1000) || 0;
+                      const y = chartHeight - ((item.count / maxValue) * chartHeight) || chartHeight;
                       return `L ${x},${y}`;
                     })
                     .join(" ")}
@@ -239,9 +305,8 @@ export default function OrdersStatistics() {
               <path
                 d={data
                   .map((item, index) => {
-                    const x = (index / (data.length - 1)) * 1000;
-                    const y =
-                      chartHeight - (item.count / maxValue) * chartHeight;
+                    const x = ((index / Math.max(data.length - 1, 1)) * 1000) || 0;
+                    const y = chartHeight - ((item.count / maxValue) * chartHeight) || chartHeight;
                     return `${index === 0 ? "M" : "L"} ${x},${y}`;
                   })
                   .join(" ")}
@@ -254,8 +319,12 @@ export default function OrdersStatistics() {
 
               {/* Data points */}
               {data.map((item, index) => {
-                const x = (index / (data.length - 1)) * 1000;
-                const y = chartHeight - (item.count / maxValue) * chartHeight;
+                const x = ((index / Math.max(data.length - 1, 1)) * 1000) || 0;
+                const y = chartHeight - ((item.count / maxValue) * chartHeight) || chartHeight;
+                
+                // Перевірка на валідність координат
+                if (isNaN(x) || isNaN(y)) return null;
+                
                 return (
                   <g key={index}>
                     <circle
