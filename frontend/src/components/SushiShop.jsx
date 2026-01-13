@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3002";
 
 export default function SushiShop() {
   const navigate = useNavigate();
@@ -56,7 +56,11 @@ export default function SushiShop() {
         i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
       );
     } else {
-      newCart = [...cart, { ...item, quantity: 1 }];
+      // Зберігаємо всі поля включно з imageUrl
+      newCart = [...cart, { 
+        ...item, 
+        quantity: 1 
+      }];
     }
 
     setCart(newCart);
@@ -121,6 +125,14 @@ export default function SushiShop() {
     localStorage.removeItem("user");
     localStorage.removeItem("userId");
     window.location.reload(); // Перезавантажити сторінку щоб оновити стан
+  };
+
+  const getImageUrl = (product) => {
+    if (product.imageUrl) {
+      if (product.imageUrl.startsWith("http")) return product.imageUrl;
+      return `${API_BASE}${product.imageUrl}`;
+    }
+    return "/icon/no-image.png";
   };
 
   return (
@@ -472,7 +484,9 @@ export default function SushiShop() {
                     overflow: "hidden",
                     boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
                     transition: "transform 0.3s",
+                    cursor: "pointer",
                   }}
+                  onClick={() => navigate(`/product/${item._id}`)}
                   onMouseOver={(e) =>
                     (e.currentTarget.style.transform = "scale(1.03)")
                   }
@@ -482,14 +496,26 @@ export default function SushiShop() {
                 >
                   <div
                     style={{
-                      fontSize: "6rem",
+                      height: "200px",
                       textAlign: "center",
                       background:
                         "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
-                      padding: "2rem",
+                      
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    {item.image}
+                    <img
+                      src={getImageUrl(item)}
+                      alt={item.name}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                      }}
+                    />
                   </div>
                   <div style={{ padding: "1.5rem" }}>
                     <h4
@@ -527,14 +553,17 @@ export default function SushiShop() {
                         {item.price}₴
                       </span>
                       <button
-                        onClick={() =>
+                        onClick={(e) => {
+                          e.stopPropagation(); // Запобігти спрацюванню onClick картки
                           addToCart({
                             id: item._id,
+                            _id: item._id,
                             name: item.name,
                             price: item.price,
                             image: item.image,
-                          })
-                        }
+                            imageUrl: item.imageUrl,
+                          });
+                        }}
                         style={{
                           background: "#48bb78",
                           color: "white",

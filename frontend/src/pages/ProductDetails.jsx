@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
+import Toast from "../components/Toast";
 import "./ProductDetails.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
@@ -20,6 +21,8 @@ export default function ProductDetails() {
   const [error, setError] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -75,6 +78,12 @@ export default function ProductDetails() {
     return [];
   };
 
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return "/icon/no-image.png";
+    if (imageUrl.startsWith("http")) return imageUrl;
+    return `${API_BASE}${imageUrl}`;
+  };
+
   const handleDelete = async () => {
     setShowDeleteModal(false);
     setLoading(true);
@@ -93,10 +102,16 @@ export default function ProductDetails() {
         throw new Error(errorData.message || "Помилка видалення товару");
       }
 
-      alert("✅ Товар успішно видалено!");
-      navigate("/products/manage");
+      setToastMessage("Товар успішно видалено!");
+      setShowToast(true);
+      
+      setTimeout(() => {
+        navigate("/products/manage");
+      }, 2000);
     } catch (error) {
-      alert("❌ " + error.message);
+      setToastMessage(error.message);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
     } finally {
       setLoading(false);
     }
@@ -109,6 +124,14 @@ export default function ProductDetails() {
   return (
     <div className="product-details-page">
       <Header />
+
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setShowToast(false)}
+          type={toastMessage.includes('❌') ? 'error' : 'success'}
+        />
+      )}
 
       <div className="product-details-container">
         <button onClick={() => navigate(-1)} className="back-button">
@@ -136,7 +159,21 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            <div className="product-image-large">{product.image}</div>
+            <div className="product-image-large">
+              {product.imageUrl ? (
+                <img
+                  src={getImageUrl(product.imageUrl)}
+                  alt={product.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <img
+                  src="/icon/no-image.png"
+                  alt={product.name}
+                  style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                />
+              )}
+            </div>
           </div>
 
           {/* Права колонка */}

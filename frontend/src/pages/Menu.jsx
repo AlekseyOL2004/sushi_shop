@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import "./Menu.css";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3002";
 
 const WEIGHT_UNITS = {
   g: "г",
@@ -34,22 +34,44 @@ export default function Menu() {
   const fetchData = async () => {
     try {
       setLoading(true);
+      console.log('API_BASE:', API_BASE);
+      console.log('Fetching menu from:', `${API_BASE}/menu`);
+      console.log('Fetching categories from:', `${API_BASE}/categories?active=true`);
+      
       const [menuRes, categoriesRes] = await Promise.all([
         fetch(`${API_BASE}/menu`),
         fetch(`${API_BASE}/categories?active=true`),
       ]);
 
+      console.log('Menu response status:', menuRes.status);
+      console.log('Categories response status:', categoriesRes.status);
+
       if (menuRes.ok) {
         const menuData = await menuRes.json();
-        setMenuItems(menuData.filter((item) => item.isAvailable));
+        console.log('Raw menu data:', menuData);
+        console.log('Menu data length:', menuData.length);
+        
+        const availableItems = menuData.filter((item) => item.isAvailable);
+        console.log('Available items:', availableItems.length);
+        
+        setMenuItems(availableItems);
+      } else {
+        const errorText = await menuRes.text();
+        console.error('Menu fetch failed. Status:', menuRes.status);
+        console.error('Error response:', errorText);
       }
 
       if (categoriesRes.ok) {
         const categoriesData = await categoriesRes.json();
+        console.log('Categories data:', categoriesData);
         setCategories(categoriesData);
+      } else {
+        const errorText = await categoriesRes.text();
+        console.error('Categories fetch failed. Status:', categoriesRes.status);
+        console.error('Error response:', errorText);
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }
@@ -73,12 +95,13 @@ export default function Menu() {
         i._id === item._id ? { ...i, quantity: i.quantity + 1 } : i
       );
     } else {
-      // Зберігаємо всі важливі поля включно з _id
+      // Зберігаємо всі важливі поля включно з _id та imageUrl
       newCart = [...cart, { 
         _id: item._id,
         name: item.name,
         price: item.price,
         image: item.image,
+        imageUrl: item.imageUrl, // Додаємо imageUrl
         category: item.category,
         quantity: 1 
       }];
@@ -131,6 +154,14 @@ export default function Menu() {
       ? { label: "Всі товари", icon: "🍱", color: "#667eea" }
       : getCategoryData(selectedCategory);
 
+  const getImageUrl = (product) => {
+    if (product.imageUrl) {
+      if (product.imageUrl.startsWith("http")) return product.imageUrl;
+      return `${API_BASE}${product.imageUrl}`;
+    }
+    return "/icon/no-image.png";
+  };
+
   return (
     <div className="menu-page">
       <Header cartCount={cartCount} />
@@ -149,6 +180,19 @@ export default function Menu() {
         <div className="menu-header">
           <h1>Наше меню</h1>
           <p className="menu-subtitle">Оберіть ваші улюблені страви</p>
+        </div>
+
+        {/* Пошук */}
+        <div className="search-section">
+          <div className="search-filter">
+            <input
+              type="text"
+              placeholder="Пошук страв..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </div>
         </div>
 
         {/* Фільтри */}
@@ -174,16 +218,6 @@ export default function Menu() {
               </button>
             ))}
           </div>
-
-          <div className="search-filter">
-            <input
-              type="text"
-              placeholder="Пошук страв..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-            />
-          </div>
         </div>
 
         {/* Сітка товарів */}
@@ -199,7 +233,15 @@ export default function Menu() {
             {filteredItems.map((item) => (
               <div key={item._id} className="menu-card">
                 <div className="card-image">
-                  <span className="emoji-display">{item.image}</span>
+                  <img
+                    src={getImageUrl(item)}
+                    alt={item.name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
                   {!item.isAvailable && (
                     <div className="unavailable-overlay">
                       <span>Немає в наявності</span>

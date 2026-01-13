@@ -20,6 +20,8 @@ export default function Reviews() {
   });
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState(null);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -88,7 +90,7 @@ export default function Reviews() {
     e.preventDefault();
 
     if (!formData.text.trim() || formData.text.length < 10) {
-      setToastMessage("⚠️ Відгук має містити мінімум 10 символів");
+      setToastMessage("Відгук має містити мінімум 10 символів");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       return;
@@ -125,8 +127,8 @@ export default function Reviews() {
 
       setToastMessage(
         editingReview
-          ? "✓ Відгук успішно оновлено!"
-          : "✓ Дякуємо за ваш відгук!"
+          ? "Відгук успішно оновлено!"
+          : "Дякуємо за ваш відгук!"
       );
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
@@ -134,19 +136,22 @@ export default function Reviews() {
       await fetchData();
       closeModal();
     } catch (error) {
-      setToastMessage(`❌ Помилка: ${error.message}`);
+      setToastMessage(`Помилка: ${error.message}`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }
   };
 
-  const handleDelete = async (reviewId) => {
-    if (!window.confirm("Ви впевнені що хочете видалити цей відгук?")) {
-      return;
-    }
+  const handleDeleteRequest = (reviewId) => {
+    setReviewToDelete(reviewId);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!reviewToDelete) return;
 
     try {
-      const res = await fetch(`${API_BASE}/reviews/${reviewId}`, {
+      const res = await fetch(`${API_BASE}/reviews/${reviewToDelete}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: currentUser._id }),
@@ -157,16 +162,24 @@ export default function Reviews() {
         throw new Error(error.message);
       }
 
-      setToastMessage("✓ Відгук видалено!");
+      setToastMessage("Відгук видалено!");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
 
       await fetchData();
     } catch (error) {
-      setToastMessage(`❌ Помилка: ${error.message}`);
+      setToastMessage(`Помилка: ${error.message}`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
+    } finally {
+      setShowDeleteModal(false);
+      setReviewToDelete(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setReviewToDelete(null);
   };
 
   const canEdit = (review) => {
@@ -175,6 +188,12 @@ export default function Reviews() {
       currentUser.role === "admin" ||
       review.userId._id === currentUser._id
     );
+  };
+
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return "/icon/no-image.png";
+    if (imageUrl.startsWith("http")) return imageUrl;
+    return `${API_BASE}${imageUrl}`;
   };
 
   if (loading) {
@@ -210,6 +229,7 @@ export default function Reviews() {
           )}
         </div>
 
+        {/* Відгуки */}
         {reviews.length === 0 ? (
           <div className="no-reviews">
             <h3>Поки що немає відгуків</h3>
@@ -257,7 +277,16 @@ export default function Reviews() {
                     <div className="products-list">
                       {review.products.map((product) => (
                         <div key={product._id} className="product-chip">
-                          <span className="product-emoji">{product.image}</span>
+                          {product.imageUrl ? (
+                            <img
+                              src={getImageUrl(product.imageUrl)}
+                              alt={product.name}
+                              className="product-chip-image"
+                              style={{ width: "20px", height: "20px", objectFit: "cover", borderRadius: "4px" }}
+                            />
+                          ) : (
+                            <span className="product-emoji">📦</span>
+                          )}
                           <span>{product.name}</span>
                         </div>
                       ))}
@@ -274,7 +303,7 @@ export default function Reviews() {
                       Редагувати
                     </button>
                     <button
-                      onClick={() => handleDelete(review._id)}
+                      onClick={() => handleDeleteRequest(review._id)}
                       className="delete-review-btn"
                     >
                       Видалити
@@ -286,6 +315,37 @@ export default function Reviews() {
           </div>
         )}
       </div>
+
+      {/* Модалка підтвердження видалення */}
+      {showDeleteModal && (
+        <div className="modal-overlay" onClick={handleDeleteCancel}>
+          <div className="modal-content-delete-review" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-delete-review">
+              <h2>Підтвердження видалення</h2>
+            </div>
+            <div className="modal-body-delete-review">
+              <p>Ви впевнені, що хочете видалити цей відгук?</p>
+              <p className="warning-text-delete-review">
+                Цю дію не можна буде скасувати!
+              </p>
+            </div>
+            <div className="modal-actions-delete-review">
+              <button
+                onClick={handleDeleteConfirm}
+                className="confirm-delete-btn-review"
+              >
+                Так, видалити
+              </button>
+              <button
+                onClick={handleDeleteCancel}
+                className="cancel-delete-btn-review"
+              >
+                Скасувати
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Модалка створення/редагування відгуку */}
       {showModal && (
@@ -400,7 +460,18 @@ export default function Reviews() {
                         className="product-checkbox-input"
                       />
                       <div className="review-product-card-content">
-                        <span className="review-product-image">{item.image}</span>
+                        <div className="review-product-image">
+                          <img
+                            src={getImageUrl(item.imageUrl)}
+                            alt={item.name}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              borderRadius: "8px",
+                            }}
+                          />
+                        </div>
                         <div className="review-product-info">
                           <span className="review-product-name">{item.name}</span>
                           <span className="review-product-price">{item.price}₴</span>

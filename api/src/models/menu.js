@@ -1,64 +1,61 @@
 const mongoose = require("mongoose");
 
-const menuSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Name is required"],
+const menuItemSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    image: {
+      type: String,
+      default: "🍣",
+    },
+    imageUrl: {
+      type: String,
+      default: null,
+    },
+    category: {
+      type: String,
+      required: true,
+      default: "rolls",
+    },
+    ingredients: {
+      type: String,
+    },
+    weight: {
+      type: Number,
+    },
+    weightUnit: {
+      type: String,
+      enum: ["g", "l", "pcs"],
+      default: "g",
+    },
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
-  description: {
-    type: String,
-    required: [true, "Description is required"],
-  },
-  price: {
-    type: Number,
-    required: [true, "Price is required"],
-    min: [0, "Price must be positive"],
-  },
-  image: {
-    type: String,
-    default: "🍣",
-  },
-  category: {
-    type: String,
-    enum: ["rolls", "sushi", "sets", "soups", "drinks", "desserts"],
-    default: "rolls",
-    required: true,
-  },
-  ingredients: {
-    type: String,
-  },
-  weight: {
-    type: Number,
-  },
-  weightUnit: {
-    type: String,
-    enum: ["g", "l", "pcs"],
-    default: "g",
-  },
-  isAvailable: {
-    type: Boolean,
-    default: true,
-  },
-  createdBy: {
-    type: String,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
-menuSchema.pre("save", function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
+const MenuItem = mongoose.model("MenuItem", menuItemSchema);
 
-const Menu = mongoose.model("Menu", menuSchema);
-
-module.exports = Menu;
+module.exports = MenuItem;
 
 // Переконайтеся що MongoDB автоматично додає _id при збереженні

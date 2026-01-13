@@ -1,20 +1,49 @@
 const express = require("express");
-const Menu = require("../models/menu");
+const MenuItem = require("../models/menuItem");
+const User = require("../models/user");
+const fs = require('fs');
+const path = require('path');
 const router = new express.Router();
 
-// Отримати всі товари
+// Helper функція для видалення файлу зображення
+const deleteImageFile = (imageUrl) => {
+  if (!imageUrl) return;
+  
+  const imagePath = path.join(__dirname, '../../uploads', path.basename(imageUrl));
+  
+  if (fs.existsSync(imagePath)) {
+    try {
+      fs.unlinkSync(imagePath);
+      console.log(`✅ Deleted image file: ${imagePath}`);
+      return true;
+    } catch (error) {
+      console.error(`⚠️ Failed to delete image file: ${imagePath}`, error);
+      return false;
+    }
+  } else {
+    console.log(`⚠️ Image file not found: ${imagePath}`);
+    return false;
+  }
+};
+
+// Отримати всі товари або фільтрувати
 router.get("/", async (req, res) => {
   try {
     const { category, available } = req.query;
-    let query = {};
+    const filter = {};
 
-    if (category) query.category = category;
-    if (available !== undefined) query.isAvailable = available === "true";
+    if (category) filter.category = category;
+    if (available === "true") filter.isAvailable = true;
 
-    const menuItems = await Menu.find(query).sort({ createdAt: -1 });
+    console.log('Fetching menu items with filter:', filter);
+    
+    const menuItems = await MenuItem.find(filter).sort({ createdAt: -1 });
+    
+    console.log(`Found ${menuItems.length} menu items`);
+    
     res.json(menuItems);
   } catch (error) {
-    console.error("Get menu error:", error);
+    console.error("Get menu items error:", error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -22,42 +51,38 @@ router.get("/", async (req, res) => {
 // Отримати товар за ID
 router.get("/:id", async (req, res) => {
   try {
-    const item = await Menu.findById(req.params.id);
-    if (!item) {
-      return res.status(404).json({ message: "Item not found" });
+    const menuItem = await MenuItem.findById(req.params.id);
+    if (!menuItem) {
+      return res.status(404).json({ message: "Menu item not found" });
     }
-    res.json(item);
+    res.json(menuItem);
   } catch (error) {
     console.error("Get menu item error:", error);
     res.status(500).json({ message: error.message });
   }
 });
 
-// Створити новий товар (тільки адмін/модератор)
+// Створити новий товар
 router.post("/", async (req, res) => {
   try {
     const { adminId, adminRole } = req.body;
 
-    if (!adminId || !["admin", "moderator"].includes(adminRole)) {
+    if (!adminId || !adminRole) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const admin = await User.findById(adminId);
+    if (!admin || (admin.role !== "admin" && admin.role !== "moderator")) {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    const menuItem = new Menu({
-      name: req.body.name,
-      description: req.body.description,
-      price: req.body.price,
-      image: req.body.image || "🍣",
-      category: req.body.category || "rolls",
-      ingredients: req.body.ingredients,
-      weight: req.body.weight,
-      weightUnit: req.body.weightUnit || "g",
-      isAvailable:
-        req.body.isAvailable !== undefined ? req.body.isAvailable : true,
+    const menuItem = new MenuItem({
+      ...req.body,
       createdBy: adminId,
     });
 
     await menuItem.save();
-    console.log(`✅ Menu item created: ${menuItem.name} by ${adminId}`);
+    console.log(`✅ New menu item created: ${menuItem.name} by ${admin.email}`);
     res.status(201).json(menuItem);
   } catch (error) {
     console.error("Create menu item error:", error);
@@ -65,25 +90,38 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Оновити товар (тільки адмін/модератор)
+// Оновити товар
 router.patch("/:id", async (req, res) => {
   try {
-    const { adminId, adminRole } = req.body;
+    const { id } = req.params;
+    const updates = req.body;
+    const { adminId, adminRole } = updates;
 
-    if (!adminId || !["admin", "moderator"].includes(adminRole)) {
+    if (!adminId || !adminRole) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const admin = await User.findById(adminId);
+    if (!admin || (admin.role !== "admin" && admin.role !== "moderator")) {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    console.log("=== UPDATE MENU ITEM ===");
-    console.log("Item ID:", req.params.id);
-    console.log("Request body:", req.body);
+    const existingItem = await MenuItem.findById(id);
+    if (!existingItem) {
+      return res.status(404).json({ message: "Menu item not found" });
+    }
 
-    const updates = {};
+    // Якщо змінюється зображення - видалити старе
+    if (updates.imageUrl && existingItem.imageUrl && updates.imageUrl !== existingItem.imageUrl) {
+      deleteImageFile(existingItem.imageUrl);
+    }
+
     const allowedUpdates = [
       "name",
       "description",
       "price",
       "image",
+      "imageUrl",
       "category",
       "ingredients",
       "weight",
@@ -91,28 +129,19 @@ router.patch("/:id", async (req, res) => {
       "isAvailable",
     ];
 
+    const sanitizedUpdates = {};
     allowedUpdates.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
-        console.log(`Update field ${field}:`, req.body[field]);
+      if (updates[field] !== undefined) {
+        sanitizedUpdates[field] = updates[field];
       }
     });
 
-    updates.updatedAt = Date.now();
-
-    console.log("Final updates:", updates);
-
-    const menuItem = await Menu.findByIdAndUpdate(req.params.id, updates, {
+    const menuItem = await MenuItem.findByIdAndUpdate(id, sanitizedUpdates, {
       new: true,
       runValidators: true,
     });
 
-    if (!menuItem) {
-      return res.status(404).json({ message: "Item not found" });
-    }
-
-    console.log(`✅ Menu item updated: ${menuItem.name} by ${adminId}`);
-    console.log("Updated item:", menuItem);
+    console.log(`✅ Menu item updated: ${menuItem.name} by ${admin.email}`);
     res.json(menuItem);
   } catch (error) {
     console.error("Update menu item error:", error);
@@ -120,23 +149,34 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-// Видалити товар (тільки адмін)
+// Видалити товар
 router.delete("/:id", async (req, res) => {
   try {
+    const { id } = req.params;
     const { adminId, adminRole } = req.body;
 
-    if (!adminId || adminRole !== "admin") {
-      return res.status(403).json({ message: "Only admins can delete items" });
+    if (!adminId || !adminRole) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const menuItem = await Menu.findByIdAndDelete(req.params.id);
+    const admin = await User.findById(adminId);
+    if (!admin || (admin.role !== "admin" && admin.role !== "moderator")) {
+      return res.status(403).json({ message: "Access denied" });
+    }
 
+    const menuItem = await MenuItem.findById(id);
     if (!menuItem) {
-      return res.status(404).json({ message: "Item not found" });
+      return res.status(404).json({ message: "Menu item not found" });
     }
 
-    console.log(`✅ Menu item deleted: ${menuItem.name} by ${adminId}`);
-    res.json({ message: "Item deleted successfully", deletedItem: menuItem });
+    // Видалити фізичний файл
+    deleteImageFile(menuItem.imageUrl);
+
+    // Видалити товар з бази даних
+    await MenuItem.findByIdAndDelete(id);
+
+    console.log(`✅ Menu item deleted: ${menuItem.name} by ${admin.email}`);
+    res.json({ message: "Menu item deleted successfully" });
   } catch (error) {
     console.error("Delete menu item error:", error);
     res.status(500).json({ message: error.message });

@@ -10,5 +10,11 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
+    proxy: {
+      '/uploads': {
+        target: process.env.VITE_API_BASE || 'http://localhost:3002',
+        changeOrigin: true,
+      }
+    }
   },
 });

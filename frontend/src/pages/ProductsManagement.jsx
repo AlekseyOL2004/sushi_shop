@@ -72,6 +72,14 @@ export default function ProductsManagement() {
     return matchesSearch && matchesCategory && matchesAvailability;
   });
 
+  const getImageUrl = (product) => {
+    if (product.imageUrl) {
+      if (product.imageUrl.startsWith("http")) return product.imageUrl;
+      return `${API_BASE}${product.imageUrl}`;
+    }
+    return product.image; // fallback to emoji
+  };
+
   if (!currentUser) return <div className="loading">Завантаження...</div>;
 
   return (
@@ -158,26 +166,47 @@ export default function ProductsManagement() {
                 className="management-product-card"
                 onClick={() => navigate(`/products/${product._id}`)}
               >
-                <div className="management-product-image">{product.image}</div>
+                <div className="management-product-image">
+                  {product.imageUrl ? (
+                    <img
+                      src={getImageUrl(product)}
+                      alt={product.name}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    product.image
+                  )}
+                </div>
                 <div className="management-product-info">
                   <h3>{product.name}</h3>
                   <span
                     className="management-category-badge"
                     style={{
-                      background: categories.find((c) => c.key === product.category)
+                      background: categories.find(
+                        (c) => c.key === product.category
+                      )
                         ? "linear-gradient(135deg, #1c879e 0%, #00c2a5 100%)"
                         : "#1c879e",
                     }}
                   >
-                    {categories.find((c) => c.key === product.category)?.label ||
-                      product.category}
+                    {categories.find(
+                      (c) => c.key === product.category
+                    )?.label || product.category}
                   </span>
-                  <p className="management-product-description">{product.description}</p>
+                  <p className="management-product-description">
+                    {product.description}
+                  </p>
                   <p className="management-product-weight">
                     {product.weight} {product.weightUnit || "г"}
                   </p>
                   <div className="management-product-footer">
-                    <span className="management-product-price">{product.price}₴</span>
+                    <span className="management-product-price">
+                      {product.price}₴
+                    </span>
                     <span
                       className={`management-availability-badge ${
                         product.isAvailable ? "available" : "unavailable"

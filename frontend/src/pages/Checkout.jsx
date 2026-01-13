@@ -270,6 +270,14 @@ export default function Checkout() {
     return cart.some(item => !noCutleryCategories.includes(item.category));
   };
 
+  const getImageUrl = (product) => {
+    if (product.imageUrl) {
+      if (product.imageUrl.startsWith("http")) return product.imageUrl;
+      return `${API_BASE}${product.imageUrl}`;
+    }
+    return "/icon/no-image.png";
+  };
+
   return (
     <div className="checkout-page">
       <Header cartCount={cartCount} />
@@ -670,7 +678,18 @@ export default function Checkout() {
                 <div className="cart-items-list">
                   {cart.map((item) => (
                     <div key={item._id} className="cart-item">
-                      <div className="item-image">{item.image}</div>
+                      <div className="item-image">
+                        <img
+                          src={getImageUrl(item)}
+                          alt={item.name}
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            objectFit: "cover",
+                            borderRadius: "8px",
+                          }}
+                        />
+                      </div>
                       <div className="item-details">
                         <h4>{item.name}</h4>
                         <p className="item-price">
@@ -727,7 +746,18 @@ export default function Checkout() {
                   {/* День народження рол */}
                   {useBirthdayRoll && birthdayRoll && (
                     <div key="cart-birthday" className="cart-item birthday-item">
-                      <div className="item-image">{birthdayRoll.image}</div>
+                      <div className="item-image">
+                        <img
+                          src={getImageUrl(birthdayRoll)}
+                          alt={birthdayRoll.name}
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            objectFit: "cover",
+                            borderRadius: "8px",
+                          }}
+                        />
+                      </div>
                       <div className="item-details">
                         <h4>{birthdayRoll.name}</h4>
                         <p className="item-price birthday-label">🎂 Подарунок на День Народження</p>

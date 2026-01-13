@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import "./OrdersManagement.css";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3002";
 
 const STATUS_CONFIG = {
   pending: { label: "Очікує підтвердження", color: "#fbbf24", icon: "/icon/clock.png" },

@@ -7,16 +7,32 @@ const reviewSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    name: { type: String, required: true },
-    rating: { type: Number, required: true, min: 1, max: 5 },
-    text: { type: String, required: true, minlength: 10, maxlength: 1000 },
+    name: {
+      type: String,
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+    },
+    text: {
+      type: String,
+      required: true,
+      minlength: 10,
+      maxlength: 1000,
+    },
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Menu",
+        ref: "MenuItem", // Змінено з "Menu" на "MenuItem"
       },
     ],
-    isApproved: { type: Boolean, default: true },
+    isApproved: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

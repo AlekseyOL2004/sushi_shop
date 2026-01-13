@@ -14,8 +14,14 @@ router.get("/", async (req, res) => {
     }
 
     let query = Review.find(filter)
-      .populate("userId", "firstName lastName")
-      .populate("products", "name image")
+      .populate({
+        path: "userId",
+        select: "firstName lastName",
+      })
+      .populate({
+        path: "products",
+        select: "name image imageUrl price",
+      })
       .sort({ createdAt: -1 });
 
     if (limit) {
@@ -23,7 +29,30 @@ router.get("/", async (req, res) => {
     }
 
     const reviews = await query;
-    res.json(reviews);
+
+    // Фільтруємо відгуки, видаляючи ті, де userId не існує
+    const validReviews = reviews
+      .filter((review) => review.userId != null)
+      .map((review) => {
+        // Фільтруємо products, залишаючи тільки ті, що існують
+        const validProducts = review.products.filter(
+          (product) => product != null
+        );
+
+        return {
+          _id: review._id,
+          userId: review.userId,
+          name: review.name,
+          rating: review.rating,
+          text: review.text,
+          products: validProducts,
+          isApproved: review.isApproved,
+          createdAt: review.createdAt,
+          updatedAt: review.updatedAt,
+        };
+      });
+
+    res.json(validReviews);
   } catch (error) {
     console.error("Get reviews error:", error);
     res.status(500).json({ message: error.message });
@@ -34,14 +63,39 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const review = await Review.findById(req.params.id)
-      .populate("userId", "firstName lastName")
-      .populate("products", "name image price");
+      .populate({
+        path: "userId",
+        select: "firstName lastName",
+      })
+      .populate({
+        path: "products",
+        select: "name image imageUrl price",
+      });
 
     if (!review) {
       return res.status(404).json({ message: "Review not found" });
     }
 
-    res.json(review);
+    if (!review.userId) {
+      return res.status(404).json({ message: "Review author not found" });
+    }
+
+    // Фільтруємо products
+    const validProducts = review.products.filter((product) => product != null);
+
+    const validReview = {
+      _id: review._id,
+      userId: review.userId,
+      name: review.name,
+      rating: review.rating,
+      text: review.text,
+      products: validProducts,
+      isApproved: review.isApproved,
+      createdAt: review.createdAt,
+      updatedAt: review.updatedAt,
+    };
+
+    res.json(validReview);
   } catch (error) {
     console.error("Get review error:", error);
     res.status(500).json({ message: error.message });
@@ -73,8 +127,14 @@ router.post("/", async (req, res) => {
     await review.save();
 
     const populatedReview = await Review.findById(review._id)
-      .populate("userId", "firstName lastName")
-      .populate("products", "name image");
+      .populate({
+        path: "userId",
+        select: "firstName lastName",
+      })
+      .populate({
+        path: "products",
+        select: "name image imageUrl",
+      });
 
     console.log(`✅ New review created by ${name}`);
     res.status(201).json(populatedReview);
@@ -103,7 +163,6 @@ router.patch("/:id", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Перевірка прав: тільки автор або адмін можуть редагувати
     if (review.userId.toString() !== userId && user.role !== "admin") {
       return res.status(403).json({ message: "Access denied" });
     }
@@ -115,8 +174,14 @@ router.patch("/:id", async (req, res) => {
     await review.save();
 
     const updatedReview = await Review.findById(review._id)
-      .populate("userId", "firstName lastName")
-      .populate("products", "name image");
+      .populate({
+        path: "userId",
+        select: "firstName lastName",
+      })
+      .populate({
+        path: "products",
+        select: "name image imageUrl",
+      });
 
     console.log(`✅ Review ${review._id} updated`);
     res.json(updatedReview);
@@ -145,7 +210,6 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Перевірка прав: тільки автор або адмін можуть видаляти
     if (review.userId.toString() !== userId && user.role !== "admin") {
       return res.status(403).json({ message: "Access denied" });
     }

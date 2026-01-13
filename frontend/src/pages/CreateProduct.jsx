@@ -1,22 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import ImageUpload from "../components/ImageUpload";
+import Toast from "../components/Toast";
 import "./ProductForm.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
-
-const EMOJI_OPTIONS = [
-  "🍱",
-  "🍣",
-  "🍤",
-  "🍙",
-  "🍜",
-  "🥤",
-  "🍰",
-  "🎁",
-  "🥢",
-  "🍵",
-];
 
 const WEIGHT_UNITS = {
   g: { label: "Грами (г)", icon: "" },
@@ -32,7 +21,7 @@ export default function CreateProduct() {
     name: "",
     description: "",
     price: "",
-    image: "🍣",
+    imageUrl: null,
     category: "",
     ingredients: "",
     weight: "",
@@ -41,6 +30,8 @@ export default function CreateProduct() {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -97,6 +88,7 @@ export default function CreateProduct() {
         ...formData,
         price: Number(formData.price),
         weight: formData.weight ? Number(formData.weight) : null,
+        imageUrl: formData.imageUrl,
         adminId: currentUser._id,
         adminRole: currentUser.role,
       };
@@ -113,8 +105,12 @@ export default function CreateProduct() {
       }
 
       const newProduct = await res.json();
-      alert(`✅ Товар "${newProduct.name}" успішно створено!`);
-      navigate("/products/manage");
+      setToastMessage(`Товар "${newProduct.name}" успішно створено!`);
+      setShowToast(true);
+      
+      setTimeout(() => {
+        navigate("/products/manage");
+      }, 2000);
     } catch (error) {
       setErrors({ general: error.message });
     } finally {
@@ -142,6 +138,14 @@ export default function CreateProduct() {
     <div className="product-form-container">
       <Header />
 
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setShowToast(false)}
+          type="success"
+        />
+      )}
+
       <div className="product-form-wrapper">
         <div className="product-form-card">
           <header className="form-header">
@@ -168,53 +172,42 @@ export default function CreateProduct() {
               {errors.name && <span className="error">{errors.name}</span>}
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Категорія *</label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                >
-                  {categories.length === 0 ? (
-                    <option value="">Немає доступних категорій</option>
-                  ) : (
-                    categories.map((cat) => (
-                      <option key={cat.key} value={cat.key}>
-                        {cat.label}
-                      </option>
-                    ))
-                  )}
-                </select>
-                {categories.length === 0 && (
-                  <span className="error">
-                    Створіть категорії на сторінці{" "}
-                    <button
-                      type="button"
-                      onClick={() => navigate("/categories")}
-                      style={{ color: "#1c879e", textDecoration: "underline" }}
-                    >
-                      Управління категоріями
-                    </button>
-                  </span>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label>Іконка</label>
-                <select
-                  name="image"
-                  value={formData.image}
-                  onChange={handleChange}
-                >
-                  {EMOJI_OPTIONS.map((emoji) => (
-                    <option key={emoji} value={emoji}>
-                      {emoji}
+            <div className="form-group">
+              <label>Категорія *</label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+              >
+                {categories.length === 0 ? (
+                  <option value="">Немає доступних категорій</option>
+                ) : (
+                  categories.map((cat) => (
+                    <option key={cat.key} value={cat.key}>
+                      {cat.label}
                     </option>
-                  ))}
-                </select>
-              </div>
+                  ))
+                )}
+              </select>
+              {categories.length === 0 && (
+                <span className="error">
+                  Створіть категорії на сторінці{" "}
+                  <button
+                    type="button"
+                    onClick={() => navigate("/categories")}
+                    style={{ color: "#1c879e", textDecoration: "underline" }}
+                  >
+                    Управління категоріями
+                  </button>
+                </span>
+              )}
             </div>
+
+            <ImageUpload
+              currentImageUrl={formData.imageUrl}
+              onImageChange={(url) => setFormData({ ...formData, imageUrl: url })}
+              onImageDelete={() => setFormData({ ...formData, imageUrl: null })}
+            />
 
             <div className="form-group">
               <label>Опис *</label>
@@ -324,7 +317,30 @@ export default function CreateProduct() {
             <div className="preview-section">
               <h3>Попередній перегляд</h3>
               <div className="preview-card">
-                <div className="preview-image">{formData.image}</div>
+                <div className="preview-image" style={{ width: "150px", height: "150px", margin: "0 auto" }}>
+                  {formData.imageUrl ? (
+                    <img
+                      src={`${API_BASE}${formData.imageUrl}`}
+                      alt="Preview"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src="/icon/no-image.png"
+                      alt="No image"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                      }}
+                    />
+                  )}
+                </div>
                 <h4>{formData.name || "Назва товару"}</h4>
                 <p
                   className="preview-category"

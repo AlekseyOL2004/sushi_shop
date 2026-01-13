@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
+import ImageUpload from "../components/ImageUpload";
+import Toast from "../components/Toast";
 import "./ProductForm.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
@@ -34,7 +36,7 @@ export default function EditProduct() {
     name: "",
     description: "",
     price: "",
-    image: "🍣",
+    imageUrl: null,
     category: "",
     ingredients: "",
     weight: "",
@@ -43,8 +45,10 @@ export default function EditProduct() {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("success");
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -83,6 +87,7 @@ export default function EditProduct() {
         description: product.description,
         price: product.price,
         image: product.image,
+        imageUrl: product.imageUrl || null,
         category: product.category,
         ingredients: product.ingredients || "",
         weight: product.weight || "",
@@ -135,6 +140,7 @@ export default function EditProduct() {
         ...formData,
         price: Number(formData.price),
         weight: formData.weight ? Number(formData.weight) : null,
+        imageUrl: formData.imageUrl,
         adminId: currentUser._id,
         adminRole: currentUser.role,
       };
@@ -151,9 +157,26 @@ export default function EditProduct() {
       }
 
       const updatedProduct = await res.json();
-      setOriginalData(formData);
-      setSuccessMessage("✅ Товар успішно оновлено!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      
+      const newFormData = {
+        name: updatedProduct.name,
+        description: updatedProduct.description,
+        price: updatedProduct.price,
+        imageUrl: updatedProduct.imageUrl || null,
+        category: updatedProduct.category,
+        ingredients: updatedProduct.ingredients || "",
+        weight: updatedProduct.weight || "",
+        weightUnit: updatedProduct.weightUnit || "g",
+        isAvailable: updatedProduct.isAvailable,
+      };
+      
+      setFormData(newFormData);
+      setOriginalData(newFormData);
+      
+      setToastMessage("Товар успішно оновлено!");
+      setToastType("success");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
     } catch (error) {
       setErrors({ general: error.message });
     } finally {
@@ -179,10 +202,18 @@ export default function EditProduct() {
         throw new Error(errorData.message || "Помилка видалення товару");
       }
 
-      alert("✅ Товар успішно видалено!");
-      navigate("/products/manage");
+      setToastMessage("Товар успішно видалено!");
+      setToastType("success");
+      setShowToast(true);
+      
+      setTimeout(() => {
+        navigate("/products/manage");
+      }, 2000);
     } catch (error) {
-      alert("❌ " + error.message);
+      setToastMessage(error.message);
+      setToastType("error");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
     } finally {
       setLoading(false);
     }
@@ -223,15 +254,19 @@ export default function EditProduct() {
     <div className="product-form-container">
       <Header />
 
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setShowToast(false)}
+          type={toastType}
+        />
+      )}
+
       <div className="product-form-wrapper">
         <div className="product-form-card">
           <header className="form-header">
             <h1>Редагувати товар</h1>
           </header>
-
-          {successMessage && (
-            <div className="success-message">{successMessage}</div>
-          )}
 
           <form onSubmit={handleSubmit} className="product-form">
             <div className="form-group">
@@ -246,74 +281,63 @@ export default function EditProduct() {
               {errors.name && <span className="error">{errors.name}</span>}
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Категорія *</label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  disabled={categories.length === 0}
-                >
-                  {categories.length === 0 ? (
-                    <option value="">Завантаження категорій...</option>
-                  ) : (
-                    <>
-                      {categories.map((cat) => (
-                        <option key={cat.key} value={cat.key}>
-                          {cat.label}
+            <div className="form-group">
+              <label>Категорія *</label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                disabled={categories.length === 0}
+              >
+                {categories.length === 0 ? (
+                  <option value="">Завантаження категорій...</option>
+                ) : (
+                  <>
+                    {categories.map((cat) => (
+                      <option key={cat.key} value={cat.key}>
+                        {cat.label}
+                      </option>
+                    ))}
+                    {formData.category &&
+                      !categories.find(
+                        (cat) => cat.key === formData.category
+                      ) && (
+                        <option value={formData.category} disabled>
+                          ⚠️ {formData.category} (неактивна категорія)
                         </option>
-                      ))}
-                      {formData.category &&
-                        !categories.find(
-                          (cat) => cat.key === formData.category
-                        ) && (
-                          <option value={formData.category} disabled>
-                            ⚠️ {formData.category} (неактивна категорія)
-                          </option>
-                        )}
-                    </>
-                  )}
-                </select>
-                {categories.length > 0 &&
-                  formData.category &&
-                  !categories.find((cat) => cat.key === formData.category) && (
-                    <span className="warning-text">
-                      ⚠️ Поточна категорія "{formData.category}" неактивна або
-                      видалена.{" "}
-                      <button
-                        type="button"
-                        onClick={() => navigate("/categories")}
-                        style={{
-                          color: "#1c879e",
-                          textDecoration: "underline",
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: 0,
-                        }}
-                      >
-                        Перейти до категорій
-                      </button>
-                    </span>
-                  )}
-              </div>
-
-              <div className="form-group">
-                <label>Іконка</label>
-                <select
-                  name="image"
-                  value={formData.image}
-                  onChange={handleChange}
-                >
-                  {EMOJI_OPTIONS.map((emoji) => (
-                    <option key={emoji} value={emoji}>
-                      {emoji}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                      )}
+                  </>
+                )}
+              </select>
+              {categories.length > 0 &&
+                formData.category &&
+                !categories.find((cat) => cat.key === formData.category) && (
+                  <span className="warning-text">
+                    ⚠️ Поточна категорія "{formData.category}" неактивна або
+                    видалена.{" "}
+                    <button
+                      type="button"
+                      onClick={() => navigate("/categories")}
+                      style={{
+                        color: "#1c879e",
+                        textDecoration: "underline",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                      }}
+                    >
+                      Перейти до категорій
+                    </button>
+                  </span>
+                )}
             </div>
+
+            <ImageUpload
+              currentImageUrl={formData.imageUrl}
+              onImageChange={(url) => setFormData({ ...formData, imageUrl: url })}
+              onImageDelete={() => setFormData({ ...formData, imageUrl: null })}
+            />
 
             <div className="form-group">
               <label>Опис *</label>
@@ -448,7 +472,30 @@ export default function EditProduct() {
             <div className="preview-section">
               <h3>Попередній перегляд</h3>
               <div className="preview-card">
-                <div className="preview-image">{formData.image}</div>
+                <div className="preview-image" style={{ width: "150px", height: "150px", margin: "0 auto" }}>
+                  {formData.imageUrl ? (
+                    <img
+                      src={`${API_BASE}${formData.imageUrl}`}
+                      alt="Preview"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src="/icon/no-image.png"
+                      alt="No image"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                      }}
+                    />
+                  )}
+                </div>
                 <h4>{formData.name}</h4>
                 <p
                   className="preview-category"

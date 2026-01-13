@@ -105,7 +105,16 @@ export default function ProductPage() {
           : i
       );
     } else {
-      newCart = [...cart, { ...product, quantity }];
+      // Зберігаємо всі важливі поля включно з imageUrl
+      newCart = [...cart, { 
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        imageUrl: product.imageUrl, // Додаємо imageUrl
+        category: product.category,
+        quantity 
+      }];
     }
 
     setCart(newCart);
@@ -117,6 +126,12 @@ export default function ProductPage() {
     setToastMessage(`Додано ${quantity} шт. до кошика!`);
     setShowToast(true);
     setQuantity(1);
+  };
+
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return "/icon/no-image.png";
+    if (imageUrl.startsWith("http")) return imageUrl;
+    return `${API_BASE}${imageUrl}`;
   };
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -193,7 +208,21 @@ export default function ProductPage() {
               </div>
             </div>
 
-            <div className="product-image-large">{product.image}</div>
+            <div className="product-image-large">
+              {product.imageUrl ? (
+                <img
+                  src={getImageUrl(product.imageUrl)}
+                  alt={product.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <img
+                  src="/icon/no-image.png"
+                  alt={product.name}
+                  style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                />
+              )}
+            </div>
 
             {/* Вага та категорія в лівій колонці */}
             <div className="left-column-info">

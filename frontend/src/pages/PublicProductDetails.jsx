@@ -91,6 +91,12 @@ export default function PublicProductDetails() {
     setShowToast(true);
   };
 
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return "/icon/no-image.png";
+    if (imageUrl.startsWith("http")) return imageUrl;
+    return `${API_BASE}${imageUrl}`;
+  };
+
   if (loading || !product) {
     return <div className="loading">Завантаження...</div>;
   }
@@ -115,7 +121,21 @@ export default function PublicProductDetails() {
       <div className="product-content">
         <div className="product-main-section">
           <div className="product-image-section">
-            <div className="product-image-huge">{product.image}</div>
+            <div className="product-image-huge">
+              {product.imageUrl ? (
+                <img
+                  src={getImageUrl(product.imageUrl)}
+                  alt={product.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <img
+                  src="/icon/no-image.png"
+                  alt={product.name}
+                  style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                />
+              )}
+            </div>
             {!product.isAvailable && (
               <div className="unavailable-overlay">
                 <span>❌ Товар недоступний</span>

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import './Toast.css';
 
-export default function Toast({ message, onClose, duration = 3000 }) {
+export default function Toast({ message, onClose, type = 'success', duration = 3000 }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -11,9 +11,8 @@ export default function Toast({ message, onClose, duration = 3000 }) {
   }, [duration, onClose]);
 
   return (
-    <div className="toast-notification">
+    <div className={`toast-notification ${type}`}>
       <div className="toast-content">
-        <span className="toast-icon">✓</span>
         <span className="toast-message">{message}</span>
       </div>
     </div>
