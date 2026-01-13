@@ -18,7 +18,7 @@ const menuItemSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      default: "🍱",
+      default: "",
     },
     imageUrl: {
       type: String,

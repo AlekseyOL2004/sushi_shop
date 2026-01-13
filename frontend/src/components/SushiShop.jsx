@@ -386,7 +386,7 @@ export default function SushiShop() {
       </section>
 
       {/* Promotions */}
-      <section
+      {/* <section
         style={{
           padding: "1rem 2rem",
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -447,17 +447,17 @@ export default function SushiShop() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
 
       {/* Popular Items */}
-      <section id="menu" style={{ padding: "2rem 2rem" }}>
+      <section id="menu" style={{ padding: "1rem 1rem" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <h3
             style={{
               textAlign: "center",
               fontSize: "2.5rem",
-              marginBottom: "3rem",
+              marginBottom: "2rem",
               color: "#2d3748",
             }}
           >
@@ -498,9 +498,6 @@ export default function SushiShop() {
                     style={{
                       height: "200px",
                       textAlign: "center",
-                      background:
-                        "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
-                      
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",

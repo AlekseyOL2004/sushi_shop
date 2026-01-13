@@ -48,7 +48,7 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error("❌ Error:", err);
+  console.error("Error:", err);
   res.status(500).json({ message: err.message || "Internal server error" });
 });
 
@@ -63,16 +63,16 @@ const startServer = async () => {
       useUnifiedTopology: true,
     });
 
-    console.log("✅ MongoDB connected successfully");
+    console.log("MongoDB connected successfully");
     console.log("   Database:", mongoose.connection.name);
 
     app.listen(PORT, HOST, () => {
-      console.log(`🚀 API Server running on http://${HOST}:${PORT}`);
+      console.log(`API Server running on http://${HOST}:${PORT}`);
       console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
       console.log(`   Health check: http://${HOST}:${PORT}/health`);
     });
   } catch (error) {
-    console.error("❌ Failed to connect to MongoDB:", error.message);
+    console.error("Failed to connect to MongoDB:", error.message);
     console.error("   Full error:", error);
     process.exit(1);
   }
@@ -80,22 +80,22 @@ const startServer = async () => {
 
 // Handle MongoDB connection events
 mongoose.connection.on("error", (err) => {
-  console.error("❌ MongoDB connection error:", err);
+  console.error("MongoDB connection error:", err);
 });
 
 mongoose.connection.on("disconnected", () => {
-  console.warn("⚠️ MongoDB disconnected");
+  console.warn("MongoDB disconnected");
 });
 
 mongoose.connection.on("reconnected", () => {
-  console.log("✅ MongoDB reconnected");
+  console.log("MongoDB reconnected");
 });
 
 // Graceful shutdown
 process.on("SIGINT", async () => {
-  console.log("\n⏳ Shutting down gracefully...");
+  console.log("\nShutting down gracefully...");
   await mongoose.connection.close();
-  console.log("✅ MongoDB connection closed");
+  console.log("MongoDB connection closed");
   process.exit(0);
 });
 

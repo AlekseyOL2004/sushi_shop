@@ -7,37 +7,37 @@ const menuItems = [
   {
     name: "Філадельфія",
     price: 280,
-    image: "🍣",
+    image: "",
     description: "Лосось, сир вершковий, огірок",
   },
   {
     name: "Каліфорнія",
     price: 250,
-    image: "🍱",
+    image: "",
     description: "Краб, авокадо, ікра масаго",
   },
   {
     name: "Дракон",
     price: 320,
-    image: "🐉",
+    image: "",
     description: "Вугор, огірок, авокадо, унагі соус",
   },
   {
     name: "Сяке Маки",
     price: 180,
-    image: "🍣",
+    image: "",
     description: "Лосось, рис, норі",
   },
   {
     name: "Техас",
     price: 290,
-    image: "🌶️",
+    image: "",
     description: "Курка, сир, гострий соус",
   },
   {
     name: "Тунець Спайсі",
     price: 310,
-    image: "🔥",
+    image: "",
     description: "Тунець, спайсі соус, кунжут",
   },
 ];

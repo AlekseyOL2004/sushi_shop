@@ -25,7 +25,7 @@ const seed = async () => {
         name: "Філадельфія",
         description: "Класичний рол з лососем та крем-сиром",
         price: 250,
-        image: "🍱",
+        image: "",
         category: "rolls",
         weight: 300,
         weightUnit: "g",
@@ -35,7 +35,7 @@ const seed = async () => {
         name: "Каліфорнія",
         description: "Рол з крабом та авокадо",
         price: 220,
-        image: "🍣",
+        image: "",
         category: "rolls",
         weight: 280,
         weightUnit: "g",
@@ -43,8 +43,8 @@ const seed = async () => {
       },
     ]);
 
-    console.log(`✅ Created ${categories.length} categories`);
-    console.log(`✅ Created ${menuItems.length} menu items`);
+    console.log(`Created ${categories.length} categories`);
+    console.log(`Created ${menuItems.length} menu items`);
 
     await mongoose.connection.close();
     console.log("Done!");

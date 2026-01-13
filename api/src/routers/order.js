@@ -82,15 +82,15 @@ router.post("/", async (req, res) => {
 
         await user.save();
         console.log(
-          `✅ User ${user.email} earned ${bonusPointsEarned} bonus points. Total: ${user.bonusPoints}`
+          `User ${user.email} earned ${bonusPointsEarned} bonus points. Total: ${user.bonusPoints}`
         );
       }
     }
 
-    console.log("✅ Order created successfully:", order._id);
+    console.log("Order created successfully:", order._id);
     res.json(order);
   } catch (error) {
-    console.error("❌ Create order error:", error);
+    console.error("Create order error:", error);
     res.status(400).json({ message: error.message });
   }
 });
@@ -196,7 +196,7 @@ router.patch("/:id/status", async (req, res) => {
       .populate("managerId", "firstName lastName");
 
     console.log(
-      `✅ Order ${order._id} status changed to ${status} by ${manager.email}`
+      `Order ${order._id} status changed to ${status} by ${manager.email}`
     );
     res.json(updatedOrder);
   } catch (error) {

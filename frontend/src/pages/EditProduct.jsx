@@ -7,18 +7,7 @@ import "./ProductForm.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
-const EMOJI_OPTIONS = [
-  "🍱",
-  "🍣",
-  "🍤",
-  "🍙",
-  "🍜",
-  "🥤",
-  "🍰",
-  "🎁",
-  "🥢",
-  "🍵",
-];
+
 
 const WEIGHT_UNITS = {
   g: { label: "Грами (г)", icon: "" },

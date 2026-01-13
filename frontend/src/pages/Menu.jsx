@@ -151,7 +151,7 @@ export default function Menu() {
 
   const selectedCategoryData =
     selectedCategory === "all"
-      ? { label: "Всі товари", icon: "🍱", color: "#667eea" }
+      ? { label: "Всі товари", icon: "", color: "#667eea" }
       : getCategoryData(selectedCategory);
 
   const getImageUrl = (product) => {

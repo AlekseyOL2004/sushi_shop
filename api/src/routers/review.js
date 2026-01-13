@@ -136,7 +136,7 @@ router.post("/", async (req, res) => {
         select: "name image imageUrl",
       });
 
-    console.log(`✅ New review created by ${name}`);
+    console.log(`New review created by ${name}`);
     res.status(201).json(populatedReview);
   } catch (error) {
     console.error("Create review error:", error);
@@ -183,7 +183,7 @@ router.patch("/:id", async (req, res) => {
         select: "name image imageUrl",
       });
 
-    console.log(`✅ Review ${review._id} updated`);
+    console.log(`Review ${review._id} updated`);
     res.json(updatedReview);
   } catch (error) {
     console.error("Update review error:", error);
@@ -216,7 +216,7 @@ router.delete("/:id", async (req, res) => {
 
     await Review.findByIdAndDelete(req.params.id);
 
-    console.log(`✅ Review ${req.params.id} deleted`);
+    console.log(`Review ${req.params.id} deleted`);
     res.json({ message: "Review deleted successfully" });
   } catch (error) {
     console.error("Delete review error:", error);

@@ -6,42 +6,42 @@ const defaultCategories = [
   {
     key: "rolls",
     label: "Роли",
-    icon: "🍱",
+    icon: "",
     color: "#667eea",
     isActive: true,
   },
   {
     key: "sushi",
     label: "Суші",
-    icon: "🍣",
+    icon: "",
     color: "#48bb78",
     isActive: true,
   },
   {
     key: "sets",
     label: "Сети",
-    icon: "🎁",
+    icon: "",
     color: "#ed8936",
     isActive: true,
   },
   {
     key: "soups",
     label: "Супи",
-    icon: "🍜",
+    icon: "",
     color: "#e53e3e",
     isActive: true,
   },
   {
     key: "drinks",
     label: "Напої",
-    icon: "🥤",
+    icon: "",
     color: "#4299e1",
     isActive: true,
   },
   {
     key: "desserts",
     label: "Десерти",
-    icon: "🍰",
+    icon: "",
     color: "#9f7aea",
     isActive: true,
   },
@@ -50,20 +50,18 @@ const defaultCategories = [
 async function seedCategories() {
   try {
     await mongoose.connect(mongoURL);
-    console.log("✅ Connected to MongoDB");
+    console.log("Connected to MongoDB");
 
-    // Перевірити чи вже існують категорії
     const existingCount = await Category.countDocuments();
 
     if (existingCount > 0) {
-      console.log(`ℹ️ Database already has ${existingCount} categories`);
+      console.log(`Database already has ${existingCount} categories`);
       console.log("Do you want to:");
       console.log("1. Skip seeding");
       console.log("2. Add only missing categories");
       console.log("3. Clear all and reseed");
 
-      // Для автоматичного виконання - додаємо тільки відсутні
-      console.log("\n📝 Adding only missing categories...\n");
+      console.log("\nAdding only missing categories...\n");
 
       for (const categoryData of defaultCategories) {
         const exists = await Category.findOne({ key: categoryData.key });
@@ -72,27 +70,26 @@ async function seedCategories() {
           const category = new Category(categoryData);
           await category.save();
           console.log(
-            `✅ Created category: ${category.label} (${category.key})`
+            `Created category: ${category.label} (${category.key})`
           );
         } else {
           console.log(
-            `⏭️  Category already exists: ${exists.label} (${exists.key})`
+            `Category already exists: ${exists.label} (${exists.key})`
           );
         }
       }
     } else {
-      console.log("📝 Creating default categories...\n");
+      console.log("Creating default categories...\n");
 
       for (const categoryData of defaultCategories) {
         const category = new Category(categoryData);
         await category.save();
-        console.log(`✅ Created category: ${category.label} (${category.key})`);
+        console.log(`Created category: ${category.label} (${category.key})`);
       }
     }
 
-    // Показати всі категорії
     const allCategories = await Category.find().sort({ createdAt: 1 });
-    console.log("\n📋 All categories in database:");
+    console.log("\nAll categories in database:");
     allCategories.forEach((cat, index) => {
       console.log(
         `${index + 1}. ${cat.icon} ${cat.label} (${cat.key}) - ${
@@ -101,10 +98,10 @@ async function seedCategories() {
       );
     });
 
-    console.log("\n✅ Categories seeding completed!");
+    console.log("\nCategories seeding completed!");
     process.exit(0);
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error("Error:", error);
     process.exit(1);
   }
 }

@@ -14,14 +14,14 @@ const deleteImageFile = (imageUrl) => {
   if (fs.existsSync(imagePath)) {
     try {
       fs.unlinkSync(imagePath);
-      console.log(`✅ Deleted image file: ${imagePath}`);
+      console.log(`Deleted image file: ${imagePath}`);
       return true;
     } catch (error) {
-      console.error(`⚠️ Failed to delete image file: ${imagePath}`, error);
+      console.error(`Failed to delete image file: ${imagePath}`, error);
       return false;
     }
   } else {
-    console.log(`⚠️ Image file not found: ${imagePath}`);
+    console.log(`Image file not found: ${imagePath}`);
     return false;
   }
 };
@@ -82,7 +82,7 @@ router.post("/", async (req, res) => {
     });
 
     await menuItem.save();
-    console.log(`✅ New menu item created: ${menuItem.name} by ${admin.email}`);
+    console.log(`New menu item created: ${menuItem.name} by ${admin.email}`);
     res.status(201).json(menuItem);
   } catch (error) {
     console.error("Create menu item error:", error);
@@ -141,7 +141,7 @@ router.patch("/:id", async (req, res) => {
       runValidators: true,
     });
 
-    console.log(`✅ Menu item updated: ${menuItem.name} by ${admin.email}`);
+    console.log(`Menu item updated: ${menuItem.name} by ${admin.email}`);
     res.json(menuItem);
   } catch (error) {
     console.error("Update menu item error:", error);
@@ -175,7 +175,7 @@ router.delete("/:id", async (req, res) => {
     // Видалити товар з бази даних
     await MenuItem.findByIdAndDelete(id);
 
-    console.log(`✅ Menu item deleted: ${menuItem.name} by ${admin.email}`);
+    console.log(`Menu item deleted: ${menuItem.name} by ${admin.email}`);
     res.json({ message: "Menu item deleted successfully" });
   } catch (error) {
     console.error("Delete menu item error:", error);
