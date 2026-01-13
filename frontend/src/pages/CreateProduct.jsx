@@ -19,9 +19,9 @@ const EMOJI_OPTIONS = [
 ];
 
 const WEIGHT_UNITS = {
-  g: { label: "Грами (г)", icon: "⚖️" },
-  l: { label: "Літри (л)", icon: "🧃" },
-  pcs: { label: "Штуки (шт)", icon: "🔢" },
+  g: { label: "Грами (г)", icon: "" },
+  l: { label: "Літри (л)", icon: "" },
+  pcs: { label: "Штуки (шт)", icon: "" },
 };
 
 export default function CreateProduct() {
@@ -142,219 +142,221 @@ export default function CreateProduct() {
     <div className="product-form-container">
       <Header />
 
-      <div className="product-form-card">
-        <header className="form-header-sub">
-          <button
-            onClick={() => navigate("/products/manage")}
-            className="back-btn-sub"
-          >
-            ← Назад до списку
-          </button>
-          <h1>Створити новий товар</h1>
-        </header>
+      <div className="product-form-wrapper">
+        <div className="product-form-card">
+          <header className="form-header">
+            <h1>Створити новий товар</h1>
+            <button
+              onClick={() => navigate("/products/manage")}
+              className="back-btn"
+            >
+              Назад до списку
+            </button>
+          </header>
 
-        <form onSubmit={handleSubmit} className="product-form">
-          <div className="form-group">
-            <label>Назва товару *</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Наприклад: Філадельфія"
-              required
-            />
-            {errors.name && <span className="error">{errors.name}</span>}
-          </div>
-
-          <div className="form-row">
+          <form onSubmit={handleSubmit} className="product-form">
             <div className="form-group">
-              <label>Категорія *</label>
-              <select
-                name="category"
-                value={formData.category}
+              <label>Назва товару *</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
-              >
-                {categories.length === 0 ? (
-                  <option value="">Немає доступних категорій</option>
-                ) : (
-                  categories.map((cat) => (
-                    <option key={cat.key} value={cat.key}>
-                      {cat.icon} {cat.label}
-                    </option>
-                  ))
+                placeholder="Наприклад: Філадельфія"
+                required
+              />
+              {errors.name && <span className="error">{errors.name}</span>}
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Категорія *</label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                >
+                  {categories.length === 0 ? (
+                    <option value="">Немає доступних категорій</option>
+                  ) : (
+                    categories.map((cat) => (
+                      <option key={cat.key} value={cat.key}>
+                        {cat.label}
+                      </option>
+                    ))
+                  )}
+                </select>
+                {categories.length === 0 && (
+                  <span className="error">
+                    Створіть категорії на сторінці{" "}
+                    <button
+                      type="button"
+                      onClick={() => navigate("/categories")}
+                      style={{ color: "#1c879e", textDecoration: "underline" }}
+                    >
+                      Управління категоріями
+                    </button>
+                  </span>
                 )}
-              </select>
-              {categories.length === 0 && (
-                <span className="error">
-                  Створіть категорії на сторінці{" "}
-                  <button
-                    type="button"
-                    onClick={() => navigate("/categories")}
-                    style={{ color: "#667eea", textDecoration: "underline" }}
-                  >
-                    Управління категоріями
-                  </button>
-                </span>
+              </div>
+
+              <div className="form-group">
+                <label>Іконка</label>
+                <select
+                  name="image"
+                  value={formData.image}
+                  onChange={handleChange}
+                >
+                  {EMOJI_OPTIONS.map((emoji) => (
+                    <option key={emoji} value={emoji}>
+                      {emoji}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Опис *</label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Опишіть товар..."
+                rows="4"
+                required
+              />
+              {errors.description && (
+                <span className="error">{errors.description}</span>
               )}
             </div>
 
             <div className="form-group">
-              <label>Іконка</label>
-              <select
-                name="image"
-                value={formData.image}
+              <label>Інгредієнти</label>
+              <textarea
+                name="ingredients"
+                value={formData.ingredients}
                 onChange={handleChange}
-              >
-                {EMOJI_OPTIONS.map((emoji) => (
-                  <option key={emoji} value={emoji}>
-                    {emoji}
-                  </option>
-                ))}
-              </select>
+                placeholder="Лосось, рис, норі, крем-сир..."
+                rows="3"
+              />
             </div>
-          </div>
 
-          <div className="form-group">
-            <label>Опис *</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Опишіть товар..."
-              rows="4"
-              required
-            />
-            {errors.description && (
-              <span className="error">{errors.description}</span>
-            )}
-          </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Ціна (₴) *</label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="0"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+                {errors.price && <span className="error">{errors.price}</span>}
+              </div>
 
-          <div className="form-group">
-            <label>Інгредієнти</label>
-            <textarea
-              name="ingredients"
-              value={formData.ingredients}
-              onChange={handleChange}
-              placeholder="Лосось, рис, норі, крем-сир..."
-              rows="3"
-            />
-          </div>
+              <div className="form-group">
+                <label>Одиниця виміру</label>
+                <select
+                  name="weightUnit"
+                  value={formData.weightUnit}
+                  onChange={handleChange}
+                >
+                  {Object.entries(WEIGHT_UNITS).map(([key, { label }]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-          <div className="form-row">
             <div className="form-group">
-              <label>Ціна (₴) *</label>
+              <label>
+                {formData.weightUnit === "g" && "Вага (г)"}
+                {formData.weightUnit === "l" && "Об'єм (л)"}
+                {formData.weightUnit === "pcs" && "Кількість (шт)"}
+              </label>
               <input
                 type="number"
-                name="price"
-                value={formData.price}
+                name="weight"
+                value={formData.weight}
                 onChange={handleChange}
                 placeholder="0"
                 min="0"
-                step="0.01"
-                required
+                step={formData.weightUnit === "l" ? "0.01" : "1"}
               />
-              {errors.price && <span className="error">{errors.price}</span>}
+              {errors.weight && <span className="error">{errors.weight}</span>}
             </div>
 
-            <div className="form-group">
-              <label>Одиниця виміру</label>
-              <select
-                name="weightUnit"
-                value={formData.weightUnit}
-                onChange={handleChange}
-              >
-                {Object.entries(WEIGHT_UNITS).map(([key, { label, icon }]) => (
-                  <option key={key} value={key}>
-                    {icon} {label}
-                  </option>
-                ))}
-              </select>
+            <div className="form-group checkbox-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  name="isAvailable"
+                  checked={formData.isAvailable}
+                  onChange={handleChange}
+                />
+                <span>Товар доступний для замовлення</span>
+              </label>
             </div>
-          </div>
 
-          <div className="form-group">
-            <label>
-              {formData.weightUnit === "g" && "Вага (г)"}
-              {formData.weightUnit === "l" && "Об'єм (л)"}
-              {formData.weightUnit === "pcs" && "Кількість (шт)"}
-            </label>
-            <input
-              type="number"
-              name="weight"
-              value={formData.weight}
-              onChange={handleChange}
-              placeholder="0"
-              min="0"
-              step={formData.weightUnit === "l" ? "0.01" : "1"}
-            />
-            {errors.weight && <span className="error">{errors.weight}</span>}
-          </div>
+            {errors.general && (
+              <div className="error-message">{errors.general}</div>
+            )}
 
-          <div className="form-group checkbox-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                name="isAvailable"
-                checked={formData.isAvailable}
-                onChange={handleChange}
-              />
-              <span>Товар доступний для замовлення</span>
-            </label>
-          </div>
-
-          {errors.general && (
-            <div className="error-message">❌ {errors.general}</div>
-          )}
-
-          <div className="form-actions">
-            <button type="submit" className="save-btn" disabled={loading}>
-              {loading ? "⏳ Створення..." : "✅ Створити товар"}
-            </button>
-            <button
-              type="button"
-              className="cancel-btn"
-              onClick={() => navigate("/products/manage")}
-            >
-              ❌ Скасувати
-            </button>
-          </div>
-
-          <div className="preview-section">
-            <h3>Попередній перегляд</h3>
-            <div className="preview-card">
-              <div className="preview-image">{formData.image}</div>
-              <h4>{formData.name || "Назва товару"}</h4>
-              <p
-                className="preview-category"
-                style={{ backgroundColor: selectedCategoryData.color }}
+            <div className="form-actions">
+              <button type="submit" className="save-btn" disabled={loading}>
+                {loading ? "Створення..." : "Створити товар"}
+              </button>
+              <button
+                type="button"
+                className="cancel-btn"
+                onClick={() => navigate("/products/manage")}
               >
-                {selectedCategoryData.icon} {selectedCategoryData.label}
-              </p>
-              <p className="preview-description">
-                {formData.description || "Опис товару"}
-              </p>
-              {formData.weight && (
-                <p className="preview-weight">
-                  {WEIGHT_UNITS[formData.weightUnit].icon} {formData.weight}
-                  {formData.weightUnit === "g" && "г"}
-                  {formData.weightUnit === "l" && "л"}
-                  {formData.weightUnit === "pcs" && "шт"}
-                </p>
-              )}
-              <div className="preview-footer">
-                <span className="preview-price">{formData.price || 0}₴</span>
-                <span
-                  className={`preview-status ${
-                    formData.isAvailable ? "available" : "unavailable"
-                  }`}
+                Скасувати
+              </button>
+            </div>
+
+            <div className="preview-section">
+              <h3>Попередній перегляд</h3>
+              <div className="preview-card">
+                <div className="preview-image">{formData.image}</div>
+                <h4>{formData.name || "Назва товару"}</h4>
+                <p
+                  className="preview-category"
+                  style={{ backgroundColor: selectedCategoryData.color }}
                 >
-                  {formData.isAvailable ? "✅ Доступно" : "❌ Немає"}
-                </span>
+                  {selectedCategoryData.label}
+                </p>
+                <p className="preview-description">
+                  {formData.description || "Опис товару"}
+                </p>
+                {formData.weight && (
+                  <p className="preview-weight">
+                    {formData.weight}
+                    {formData.weightUnit === "g" && "г"}
+                    {formData.weightUnit === "l" && "л"}
+                    {formData.weightUnit === "pcs" && "шт"}
+                  </p>
+                )}
+                <div className="preview-footer">
+                  <span className="preview-price">{formData.price || 0}₴</span>
+                  <span
+                    className={`preview-status ${
+                      formData.isAvailable ? "available" : "unavailable"
+                    }`}
+                  >
+                    {formData.isAvailable ? "Доступно" : "Немає"}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

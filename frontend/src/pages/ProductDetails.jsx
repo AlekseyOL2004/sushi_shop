@@ -5,14 +5,21 @@ import "./ProductDetails.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
+const WEIGHT_UNITS = {
+  g: "г",
+  l: "л",
+  pcs: "шт"
+};
+
 export default function ProductDetails() {
-  const { productId } = useParams(); // Змінено з id на productId
+  const { productId } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -69,12 +76,10 @@ export default function ProductDetails() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm(`Ви впевнені що хочете видалити "${product.name}"?`)) {
-      return;
-    }
-
+    setShowDeleteModal(false);
+    setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/menu/${productId}`, { // Змінено з id на productId
+      const res = await fetch(`${API_BASE}/menu/${productId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -88,10 +93,12 @@ export default function ProductDetails() {
         throw new Error(errorData.message || "Помилка видалення товару");
       }
 
-      alert("Товар успішно видалено!");
+      alert("✅ Товар успішно видалено!");
       navigate("/products/manage");
     } catch (error) {
-      alert("Помилка: " + error.message);
+      alert("❌ " + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -168,7 +175,7 @@ export default function ProductDetails() {
                   <div className="weight-info">
                     <span className="weight-icon">⚖️</span>
                     <p className="weight-text">
-                      <span>{product.weight}</span> {product.weightUnit || "г"}
+                      <span>{product.weight}</span> {WEIGHT_UNITS[product.weightUnit] || "г"}
                     </p>
                   </div>
                 </div>
@@ -212,13 +219,13 @@ export default function ProductDetails() {
                 currentUser.role === "moderator") && (
                 <div className="product-actions">
                   <button
-                    onClick={() => navigate(`/products/${product._id}/edit`)}
+                    onClick={() => navigate(`/products/edit/${product._id}`)}
                     className="edit-btn"
                   >
                     Редагувати
                   </button>
                   {currentUser.role === "admin" && (
-                    <button onClick={handleDelete} className="delete-btn">
+                    <button onClick={() => setShowDeleteModal(true)} className="delete-btn">
                       Видалити
                     </button>
                   )}
@@ -227,6 +234,42 @@ export default function ProductDetails() {
           </div>
         </div>
       </div>
+
+      {/* Модалка підтвердження видалення */}
+      {showDeleteModal && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="modal-content-delete" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-delete">
+              <h2>Підтвердження видалення</h2>
+            </div>
+            <div className="modal-body-delete">
+              <p>
+                Ви впевнені, що хочете видалити товар{" "}
+                <strong>"{product.name}"</strong>?
+              </p>
+              <p className="warning-text-delete">
+                Цю дію не можна буде скасувати!
+              </p>
+            </div>
+            <div className="modal-actions-delete">
+              <button
+                onClick={handleDelete}
+                className="confirm-delete-btn"
+                disabled={loading}
+              >
+                {loading ? "Видалення..." : "Так, видалити"}
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="cancel-delete-btn"
+                disabled={loading}
+              >
+                Скасувати
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

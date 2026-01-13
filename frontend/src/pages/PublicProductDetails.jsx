@@ -7,9 +7,9 @@ import "./PublicProductDetails.css";
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
 const WEIGHT_UNITS = {
-  g: { label: "грамів", icon: "⚖️", short: "г", title: "Вага" },
-  l: { label: "літрів", icon: "🧃", short: "л", title: "Об'єм" },
-  pcs: { label: "штук", icon: "🔢", short: "шт", title: "Кількість" },
+  g: { label: "грамів", short: "г", title: "Вага" },
+  l: { label: "літрів", short: "л", title: "Об'єм" },
+  pcs: { label: "штук", short: "шт", title: "Кількість" },
 };
 
 export default function PublicProductDetails() {

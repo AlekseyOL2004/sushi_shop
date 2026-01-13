@@ -149,9 +149,9 @@ export default function ProductPage() {
   }
 
   const WEIGHT_UNITS = {
-    g: { label: "грамів", icon: "⚖️", short: "г", title: "Вага" },
-    l: { label: "літрів", icon: "🧃", short: "л", title: "Об'єм" },
-    pcs: { label: "штук", icon: "🔢", short: "шт", title: "Кількість" },
+    g: { label: "грамів", short: "г", title: "Вага" },
+    l: { label: "літрів", short: "л", title: "Об'єм" },
+    pcs: { label: "штук", short: "шт", title: "Кількість" },
   };
 
   const weightUnit = WEIGHT_UNITS[product.weightUnit] || WEIGHT_UNITS.g;

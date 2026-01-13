@@ -6,9 +6,9 @@ import "./Menu.css";
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
 const WEIGHT_UNITS = {
-  g: { short: "г", icon: "⚖️" },
-  l: { short: "л", icon: "🧃" },
-  pcs: { short: "шт", icon: "🔢" },
+  g: "г",
+  l: "л",
+  pcs: "шт"
 };
 
 export default function Menu() {
@@ -226,8 +226,7 @@ export default function Menu() {
                         className="detail-icon"
                       />
                       <span>
-                        {item.weight}
-                        {item.weightUnit || "г"}
+                        {item.weight}{WEIGHT_UNITS[item.weightUnit] || "г"}
                       </span>
                     </div>
                   </div>

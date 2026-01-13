@@ -341,8 +341,124 @@
 }
 
 .delete-btn:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* Модалка підтвердження видалення */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content-delete {
+  background: white;
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header-delete {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  padding: 2rem;
+  text-align: center;
+  color: white;
+}
+
+.modal-header-delete h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.modal-body-delete {
+  padding: 2rem;
+  text-align: center;
+}
+
+.modal-body-delete p {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #2d3748;
+  line-height: 1.6;
+}
+
+.modal-body-delete strong {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.warning-text-delete {
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-top: 1.5rem;
+}
+
+.modal-actions-delete {
+  display: flex;
+  gap: 1rem;
+  padding: 0 2rem 2rem;
+}
+
+.confirm-delete-btn,
+.cancel-delete-btn {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.confirm-delete-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.confirm-delete-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.confirm-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancel-delete-btn {
+  background: #e2e8f0;
+  color: #2d3748;
+}
+
+.cancel-delete-btn:hover:not(:disabled) {
+  background: #cbd5e0;
+  transform: translateY(-2px);
 }
 
 .add-to-cart-section {
@@ -933,5 +1049,13 @@
 
   .product-reviews-grid {
     grid-template-columns: 1fr;
+  }
+
+  .modal-content-delete {
+    width: 95%;
+  }
+
+  .modal-actions-delete {
+    flex-direction: column;
   }
 }
