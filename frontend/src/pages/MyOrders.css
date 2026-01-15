@@ -266,16 +266,102 @@
   box-shadow: 0 6px 20px rgba(28, 135, 158, 0.4);
 }
 
-/* Модалка */
-.modal-content-details {
+.order-actions-wrapper {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  align-items: stretch;
+}
+
+.qr-code-btn {
+  width: 52px;
+  height: 52px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.qr-code-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(28, 135, 158, 0.2);
+  border-color: rgba(28, 135, 158, 0.4);
+}
+
+.qr-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+/* Модалка QR коду */
+.modal-content-qr {
   background: white;
   border-radius: 16px;
-  max-width: 700px;
+  max-width: 450px;
   width: 90%;
-  max-height: 85vh;
-  overflow-y: auto;
   animation: slideUp 0.3s ease;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-body-qr {
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.qr-code-container {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.qr-order-id {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, rgba(28, 135, 158, 0.1) 0%, rgba(0, 194, 165, 0.1) 100%);
+  border-radius: 10px;
+  border: 2px solid rgba(28, 135, 158, 0.2);
+  width: 100%;
+}
+
+.qr-order-id strong {
+  color: #718096;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.qr-order-id span {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #1c879e 0%, #00c2a5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+}
+
+.qr-hint {
+  text-align: center;
+  color: #4a5568;
+  font-size: 0.95rem;
+  margin: 0;
+  padding: 0 1rem;
+  line-height: 1.5;
 }
 
 @keyframes slideUp {
@@ -560,34 +646,373 @@
   box-shadow: 0 6px 20px rgba(28, 135, 158, 0.4);
 }
 
+/* Модалка деталей для MyOrders - компактна версія */
+.my-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.my-modal-content-details {
+  background: white;
+  border-radius: 12px;
+  max-width: 700px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  margin: auto;
+}
+
+.my-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+  background: linear-gradient(135deg, rgba(28, 135, 158, 0.05) 0%, rgba(0, 194, 165, 0.05) 100%);
+}
+
+.my-modal-header h2 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.2rem;
+  background: linear-gradient(135deg, #1c879e 0%, #00c2a5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+.my-close-modal-btn-icon {
+  background: #e2e8f0;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #2d3748;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+.my-close-modal-btn-icon:hover {
+  background: #cbd5e0;
+  transform: rotate(90deg);
+}
+
+.my-modal-body {
+  padding: 1.25rem 1.5rem;
+}
+
+.my-order-timeline-section {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.my-order-timeline-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #2d3748;
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+}
+
+.my-section-icon {
+  width: 18px;
+  height: 18px;
+  filter: invert(37%) sepia(93%) saturate(500%) hue-rotate(155deg) brightness(95%);
+}
+
+.my-order-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-left: 1.5rem;
+}
+
+.my-timeline-item {
+  display: flex;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.my-timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 9px;
+  top: 24px;
+  bottom: -0.85rem;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.my-timeline-item:last-child::before {
+  display: none;
+}
+
+.my-timeline-marker {
+  position: absolute;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.65rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.my-timeline-content {
+  flex: 1;
+  background: #f7fafc;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  border-left: 3px solid #1c879e;
+  margin-left: 1.5rem;
+}
+
+.my-timeline-content strong {
+  display: block;
+  color: #2d3748;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+.my-timeline-content p {
+  color: #4a5568;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.my-order-details-section {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.my-order-details-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.my-order-details-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #2d3748;
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+}
+
+.my-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.my-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.my-detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.my-detail-label {
+  font-weight: 700;
+  color: #718096;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.my-detail-value {
+  color: #2d3748;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.my-order-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.my-order-item-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #f7fafc;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s;
+}
+
+.my-order-item-row:hover {
+  border-color: rgba(28, 135, 158, 0.3);
+  box-shadow: 0 2px 8px rgba(28, 135, 158, 0.1);
+}
+
+.my-item-name {
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 0.9rem;
+}
+
+.my-item-quantity {
+  color: #718096;
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.my-item-price {
+  font-weight: 800;
+  color: #1c879e;
+  font-size: 0.95rem;
+  text-align: right;
+}
+
+.my-order-total-section {
+  background: linear-gradient(135deg, rgba(28, 135, 158, 0.08) 0%, rgba(0, 194, 165, 0.08) 100%);
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  margin-top: 1.25rem;
+  border: 2px solid rgba(28, 135, 158, 0.2);
+}
+
+.my-total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+  color: #2d3748;
+}
+
+.my-total-row.discount {
+  color: #22c55e;
+  font-weight: 700;
+}
+
+.my-total-row.final {
+  border-top: 2px solid rgba(28, 135, 158, 0.3);
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.my-total-row.final span:last-child {
+  background: linear-gradient(135deg, #1c879e 0%, #00c2a5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 @media (max-width: 768px) {
-  .my-orders-container {
+  /* ...existing code... */
+
+  .my-modal-content-details {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .my-modal-header,
+  .my-modal-body {
     padding: 1rem;
   }
 
-  .order-summary {
+  .my-modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .my-close-modal-btn-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 1.1rem;
+  }
+
+  .my-order-timeline {
+    padding-left: 1.25rem;
+  }
+
+  .my-timeline-marker {
+    width: 18px;
+    height: 18px;
+    font-size: 0.6rem;
+  }
+
+  .my-timeline-content {
+    padding: 0.6rem 0.85rem;
+    margin-left: 1.25rem;
+  }
+
+  .my-timeline-content strong {
+    font-size: 0.85rem;
+  }
+
+  .my-timeline-content p {
+    font-size: 0.75rem;
+  }
+
+  .my-order-item-row {
+    padding: 0.65rem 0.85rem;
+    gap: 0.6rem;
+  }
+
+  .my-item-name {
+    font-size: 0.85rem;
+  }
+
+  .my-item-quantity,
+  .my-item-price {
+    font-size: 0.8rem;
+  }
+
+  .my-details-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.85rem;
   }
 
-  .order-card-header {
-    flex-direction: column;
-    gap: 0.75rem;
+  .my-order-total-section {
+    padding: 0.85rem 1rem;
   }
 
-  .status-badge-large {
-    align-self: flex-start;
+  .my-total-row {
+    font-size: 0.9rem;
+    padding: 0.4rem 0;
   }
 
-  .modal-content-details {
-    width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
-  }
-
-  .modal-header,
-  .modal-body,
-  .modal-footer {
-    padding: 1rem;
+  .my-total-row.final {
+    font-size: 1.1rem;
   }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { QRCodeSVG } from "qrcode.react";
 import Header from "../components/Header";
 import "./MyOrders.css";
 
@@ -55,6 +56,8 @@ export default function MyOrders() {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrOrderId, setQROrderId] = useState("");
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -97,6 +100,18 @@ export default function MyOrders() {
   const closeModal = () => {
     setShowModal(false);
     setSelectedOrder(null);
+  };
+
+  const openQRModal = (orderId) => {
+    // Отримати останні 6 символів
+    const shortId = orderId.slice(-6).toUpperCase();
+    setQROrderId(shortId);
+    setShowQRModal(true);
+  };
+
+  const closeQRModal = () => {
+    setShowQRModal(false);
+    setQROrderId("");
   };
 
   const getStatusProgress = (status) => {
@@ -229,12 +244,21 @@ export default function MyOrders() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => openOrderDetails(order)}
-                  className="view-order-btn"
-                >
-                  Переглянути деталі
-                </button>
+                <div className="order-actions-wrapper">
+                  <button
+                    onClick={() => openOrderDetails(order)}
+                    className="view-order-btn"
+                  >
+                    Переглянути деталі
+                  </button>
+                  <button
+                    onClick={() => openQRModal(order._id)}
+                    className="qr-code-btn"
+                    title="Показати QR код"
+                  >
+                    <img src="/icon/qr-icon.jpg" alt="QR" className="qr-icon" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -243,38 +267,38 @@ export default function MyOrders() {
 
       {/* Модалка деталей замовлення */}
       {showModal && selectedOrder && (
-        <div className="modal-overlay" onClick={closeModal}>
+        <div className="my-modal-overlay" onClick={closeModal}>
           <div
-            className="modal-content-details"
+            className="my-modal-content-details"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-header">
+            <div className="my-modal-header">
               <h2>Замовлення #{selectedOrder._id.slice(-6).toUpperCase()}</h2>
-              <button onClick={closeModal} className="close-modal-btn-icon">
+              <button onClick={closeModal} className="my-close-modal-btn-icon">
                 ✕
               </button>
             </div>
 
-            <div className="modal-body">
-              <div className="order-timeline-section">
+            <div className="my-modal-body">
+              <div className="my-order-timeline-section">
                 <h3>
-                  <img src="/icon/clock.png" alt="" className="section-icon" />
+                  <img src="/icon/clock.png" alt="" className="my-section-icon" />
                   Статус замовлення
                 </h3>
-                <div className="order-timeline">
+                <div className="my-order-timeline">
                   {[...selectedOrder.statusHistory]
                     .reverse()
                     .map((history, idx) => (
-                      <div key={idx} className="timeline-item">
+                      <div key={idx} className="my-timeline-item">
                         <div
-                          className="timeline-marker"
+                          className="my-timeline-marker"
                           style={{
                             backgroundColor: STATUS_CONFIG[history.status].color,
                           }}
                         >
                           {idx === 0 ? "●" : idx + 1}
                         </div>
-                        <div className="timeline-content">
+                        <div className="my-timeline-content">
                           <strong>{STATUS_CONFIG[history.status].label}</strong>
                           <p>
                             {new Date(history.timestamp).toLocaleString("uk-UA", {
@@ -290,17 +314,17 @@ export default function MyOrders() {
                 </div>
               </div>
 
-              <div className="order-details-section">
+              <div className="my-order-details-section">
                 <h3>
-                  <img src="/icon/box.png" alt="" className="section-icon" />
+                  <img src="/icon/box.png" alt="" className="my-section-icon" />
                   Товари
                 </h3>
-                <div className="order-items-list">
+                <div className="my-order-items-list">
                   {selectedOrder.items.map((item, idx) => (
-                    <div key={idx} className="order-item-row">
-                      <span className="item-name">{item.name}</span>
-                      <span className="item-quantity">× {item.quantity}</span>
-                      <span className="item-price">
+                    <div key={idx} className="my-order-item-row">
+                      <span className="my-item-name">{item.name}</span>
+                      <span className="my-item-quantity">× {item.quantity}</span>
+                      <span className="my-item-price">
                         {(item.price * item.quantity).toFixed(2)}₴
                       </span>
                     </div>
@@ -308,43 +332,43 @@ export default function MyOrders() {
                 </div>
               </div>
 
-              <div className="order-details-section">
+              <div className="my-order-details-section">
                 <h3>
-                  <img src="/icon/delivery.png" alt="" className="section-icon" />
+                  <img src="/icon/delivery.png" alt="" className="my-section-icon" />
                   Інформація про доставку
                 </h3>
-                <div className="details-grid">
-                  <div className="detail-item">
-                    <span className="detail-label">Тип:</span>
-                    <span className="detail-value">
+                <div className="my-details-grid">
+                  <div className="my-detail-item">
+                    <span className="my-detail-label">Тип:</span>
+                    <span className="my-detail-value">
                       {selectedOrder.deliveryType === "delivery"
                         ? "Доставка"
                         : "Самовивіз"}
                     </span>
                   </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Адреса:</span>
-                    <span className="detail-value">
+                  <div className="my-detail-item">
+                    <span className="my-detail-label">Адреса:</span>
+                    <span className="my-detail-value">
                       {selectedOrder.customerAddress}
                     </span>
                   </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Телефон:</span>
-                    <span className="detail-value">
+                  <div className="my-detail-item">
+                    <span className="my-detail-label">Телефон:</span>
+                    <span className="my-detail-value">
                       {selectedOrder.customerPhone}
                     </span>
                   </div>
                   {selectedOrder.comment && (
-                    <div className="detail-item full-width">
-                      <span className="detail-label">Коментар:</span>
-                      <span className="detail-value">{selectedOrder.comment}</span>
+                    <div className="my-detail-item full-width">
+                      <span className="my-detail-label">Коментар:</span>
+                      <span className="my-detail-value">{selectedOrder.comment}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="order-total-section">
-                <div className="total-row">
+              <div className="my-order-total-section">
+                <div className="my-total-row">
                   <span>Сума товарів:</span>
                   <span>
                     {selectedOrder.items
@@ -357,7 +381,7 @@ export default function MyOrders() {
                   </span>
                 </div>
                 {selectedOrder.deliveryType === "pickup" && (
-                  <div className="total-row discount">
+                  <div className="my-total-row discount">
                     <span>Знижка (самовивіз -5%):</span>
                     <span>
                       -
@@ -372,18 +396,55 @@ export default function MyOrders() {
                     </span>
                   </div>
                 )}
-                <div className="total-row final">
+                <div className="my-total-row final">
                   <span>Загальна сума:</span>
                   <span>{selectedOrder.totalPrice.toFixed(2)}₴</span>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
 
-            <div className="modal-footer">
-              <button onClick={closeModal} className="close-modal-btn">
-                Закрити
+      {/* Модалка QR коду */}
+      {showQRModal && (
+        <div className="modal-overlay" onClick={closeQRModal}>
+          <div
+            className="modal-content-qr"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h2>QR Код замовлення</h2>
+              <button onClick={closeQRModal} className="close-modal-btn-icon">
+                ✕
               </button>
             </div>
+
+            <div className="modal-body-qr">
+              <div className="qr-code-container">
+                <QRCodeSVG
+                  value={qrOrderId}
+                  size={256}
+                  level="H"
+                  includeMargin={true}
+                  bgColor="#ffffff"
+                  fgColor="#1c879e"
+                />
+              </div>
+              <div className="qr-order-id">
+                <strong>ID замовлення:</strong>
+                <span>#{qrOrderId}</span>
+              </div>
+              <p className="qr-hint">
+                Покажіть цей QR код для підтвердження замовлення
+              </p>
+            </div>
+
+            {/* <div className="modal-footer">
+              <button onClick={closeQRModal} className="close-modal-btn">
+                Закрити
+              </button>
+            </div> */}
           </div>
         </div>
       )}
