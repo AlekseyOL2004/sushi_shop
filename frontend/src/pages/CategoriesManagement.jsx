@@ -23,6 +23,8 @@ export default function CategoriesManagement() {
   const [imagePreview, setImagePreview] = useState("");
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -182,23 +184,19 @@ export default function CategoriesManagement() {
     }
   };
 
-  const handleDelete = async (category) => {
-    if (
-      !window.confirm(
-        `Ви впевнені що хочете видалити категорію "${category.label}"?`
-      )
-    ) {
-      return;
-    }
+  const handleDeleteRequest = (category) => {
+    setCategoryToDelete(category);
+    setShowDeleteModal(true);
+  };
 
-    if (currentUser.role !== "admin") {
-      alert("Тільки адміністратори можуть видаляти категорії");
-      return;
-    }
+  const handleDeleteConfirm = async () => {
+    if (!categoryToDelete) return;
 
+    setShowDeleteModal(false);
     setLoading(true);
+    
     try {
-      const res = await fetch(`${API_BASE}/categories/${category._id}`, {
+      const res = await fetch(`${API_BASE}/categories/${categoryToDelete._id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -217,10 +215,17 @@ export default function CategoriesManagement() {
 
       await fetchCategories();
     } catch (error) {
-      alert("❌ " + error.message);
+      setSuccessMessage("❌ " + error.message);
+      setTimeout(() => setSuccessMessage(""), 3000);
     } finally {
       setLoading(false);
+      setCategoryToDelete(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setCategoryToDelete(null);
   };
 
   const handleChange = (e) => {
@@ -302,7 +307,7 @@ export default function CategoriesManagement() {
                     </button>
                     {currentUser.role === "admin" && (
                       <button
-                        onClick={() => handleDelete(category)}
+                        onClick={() => handleDeleteRequest(category)}
                         className="delete-btn"
                       >
                         Видалити
@@ -323,6 +328,42 @@ export default function CategoriesManagement() {
             </div>
           )}
         </div>
+
+        {/* Модалка підтвердження видалення */}
+        {showDeleteModal && categoryToDelete && (
+          <div className="modal-overlay" onClick={handleDeleteCancel}>
+            <div className="modal-content-delete" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header-delete">
+                <h2>Підтвердження видалення</h2>
+              </div>
+              <div className="modal-body-delete">
+                <p>
+                  Ви впевнені, що хочете видалити категорію{" "}
+                  <strong>"{categoryToDelete.label}"</strong>?
+                </p>
+                <p className="warning-text-delete">
+                  Цю дію не можна буде скасувати!
+                </p>
+              </div>
+              <div className="modal-actions-delete">
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="confirm-delete-btn"
+                  disabled={loading}
+                >
+                  {loading ? "Видалення..." : "Так, видалити"}
+                </button>
+                <button
+                  onClick={handleDeleteCancel}
+                  className="cancel-delete-btn"
+                  disabled={loading}
+                >
+                  Скасувати
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showModal && (
           <div className="modal-overlay" onClick={closeModal}>

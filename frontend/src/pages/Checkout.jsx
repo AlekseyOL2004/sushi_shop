@@ -162,7 +162,21 @@ export default function Checkout() {
         };
       });
 
-      // Додати подарунковий рол за день народження тільки якщо чекбокс активний
+      // ВИПРАВЛЕННЯ: Додати бонусні роли (якщо обрано)
+      if (bonusRollsCount > 0) {
+        // Додаємо плейсхолдер для бонусних ролів
+        // Менеджер потім зв'яжеться і допоможе обрати конкретні роли
+        for (let i = 0; i < bonusRollsCount; i++) {
+          allItems.push({
+            itemId: null, // Менеджер обере конкретний товар пізніше
+            name: `Бонусний рол (${bonusRollsCount}) - Менеджер допоможе обрати `,
+            price: 0,
+            quantity: 1,
+          });
+        }
+      }
+// ${i + 1} з 
+      // ВИПРАВЛЕННЯ: Додати подарунковий рол за день народження (якщо обрано)
       if (useBirthdayRoll && birthdayRoll && birthdayRoll._id) {
         allItems.push({
           itemId: birthdayRoll._id,
@@ -170,8 +184,6 @@ export default function Checkout() {
           price: 0,
           quantity: 1,
         });
-      } else if (useBirthdayRoll && !birthdayRoll) {
-        console.error('Birthday roll checkbox is checked but no roll selected');
       }
 
       const orderData = {

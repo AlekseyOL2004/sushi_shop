@@ -7,7 +7,7 @@ const orderSchema = new mongoose.Schema(
         itemId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Menu",
-          required: true, // ← Перевірте це поле
+          required: false, // ВИПРАВЛЕННЯ: Змінено на false для бонусних ролів
         },
         name: { type: String, required: true },
         price: { type: Number, required: true },
@@ -50,16 +50,16 @@ const orderSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
-        "pending", // Очікує підтвердження (новий статус)
-        "processing", // В обробці
-        "confirmed", // Прийнято
-        "preparing", // Готується
-        "ready", // Готово (самовивіз)
-        "delivering", // Доставляється
-        "completed", // Виконано (доставлено)
-        "cancelled", // Скасовано
+        "pending",
+        "processing",
+        "confirmed",
+        "preparing",
+        "ready",
+        "delivering",
+        "completed",
+        "cancelled",
       ],
-      default: "pending", // Змінено на pending
+      default: "pending",
     },
     managerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     statusHistory: [
@@ -75,10 +75,7 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-// Видалити автоматичне додавання в історію при зміні статусу
-// Тепер історія буде оновлюватись тільки вручну в роутері
 orderSchema.pre("save", function (next) {
-  // Видалено автоматичне додавання в statusHistory
   next();
 });
 
