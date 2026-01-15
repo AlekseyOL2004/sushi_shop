@@ -100,12 +100,15 @@ export default function Profile() {
       newErrors.email = "Введіть коректну електронну пошту";
     }
 
-    if (formData.password && formData.password.length < 6) {
-      newErrors.password = "Пароль повинен містити мінімум 6 символів";
-    }
+    // ВИПРАВЛЕННЯ: Перевірка паролів
+    if (formData.password && formData.password.trim()) {
+      if (formData.password.length < 6) {
+        newErrors.password = "Пароль повинен містити мінімум 6 символів";
+      }
 
-    if (formData.password && formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Паролі не збігаються";
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Паролі не збігаються";
+      }
     }
 
     setErrors(newErrors);
@@ -120,24 +123,25 @@ export default function Profile() {
     console.log("isEditing:", isEditing);
 
     if (!isEditing) {
-      console.log("❌ Not in editing mode");
+      console.log("Not in editing mode");
       return;
     }
 
     if (!hasChanges()) {
-      console.log("❌ No changes detected");
+      console.log("No changes detected");
       setErrors({
         general: "Дані не були змінені. Внесіть зміни перед збереженням.",
       });
       return;
     }
 
+    // ВИПРАВЛЕННЯ: Додано валідацію перед відправкою
     if (!validateForm()) {
-      console.log("❌ Validation failed");
+      console.log("Validation failed");
       return;
     }
 
-    console.log("✅ Proceeding with update...");
+    console.log("Proceeding with update...");
     setLoading(true);
     setErrors({});
 
@@ -152,6 +156,7 @@ export default function Profile() {
         birthDate: formData.birthDate,
       };
 
+      // ВИПРАВЛЕННЯ: Додаємо пароль тільки якщо він введений і пройшов валідацію
       if (formData.password && formData.password.trim()) {
         updateData.password = formData.password;
       }

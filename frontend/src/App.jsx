@@ -18,6 +18,7 @@ import MyOrders from "./pages/MyOrders";
 import OrdersStatistics from "./pages/OrdersStatistics";
 import ProductPage from "./pages/ProductPage";
 import Reviews from "./pages/Reviews";
+import TrackOrder from "./pages/TrackOrder";
 
 export default function App() {
   return (
@@ -28,19 +29,26 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/admin" element={<AdminPanel />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/profile/:userId" element={<UserProfile />} />
+        <Route path="/my-orders" element={<MyOrders />} />
+        <Route path="/track-order" element={<TrackOrder />} />
+        <Route path="/product/:id" element={<ProductPage />} />
+        <Route path="/reviews" element={<Reviews />} />
+
+        {/* Admin routes */}
+        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/users/:userId" element={<UserProfile />} />
+
+        {/* Products management */}
         <Route path="/products/manage" element={<ProductsManagement />} />
         <Route path="/products/create" element={<CreateProduct />} />
         <Route path="/products/edit/:productId" element={<EditProduct />} />
         <Route path="/products/:productId" element={<ProductDetails />} />
-        <Route path="/product/:id" element={<ProductPage />} />
+
+        {/* Other routes */}
         <Route path="/categories" element={<CategoriesManagement />} />
         <Route path="/orders/manage" element={<OrdersManagement />} />
-        <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/orders/statistics" element={<OrdersStatistics />} />
-        <Route path="/reviews" element={<Reviews />} />
       </Routes>
     </Router>
   );

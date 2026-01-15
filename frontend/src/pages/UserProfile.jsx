@@ -103,6 +103,37 @@ export default function UserProfile() {
     return false;
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.firstName.trim()) newErrors.firstName = "Введіть ім'я";
+    if (!formData.lastName.trim()) newErrors.lastName = "Введіть прізвище";
+
+    const phoneRegex = /^[\+]?[0-9]{10,13}$/;
+    if (formData.phone && !phoneRegex.test(formData.phone)) {
+      newErrors.phone = "Введіть коректний номер телефону";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Введіть коректну електронну пошту";
+    }
+
+    // ВИПРАВЛЕННЯ: Перевірка паролів
+    if (formData.password && formData.password.trim()) {
+      if (formData.password.length < 6) {
+        newErrors.password = "Пароль повинен містити мінімум 6 символів";
+      }
+      
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Паролі не збігаються";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -111,7 +142,7 @@ export default function UserProfile() {
     console.log("isEditing:", isEditing);
 
     if (!isEditing) {
-      console.log("❌ Not in editing mode");
+      console.log("Not in editing mode");
       return;
     }
 
@@ -119,6 +150,12 @@ export default function UserProfile() {
       setErrors({
         general: "Дані не були змінені. Внесіть зміни перед збереженням.",
       });
+      return;
+    }
+
+    // ВИПРАВЛЕННЯ: Додано валідацію перед відправкою
+    if (!validateForm()) {
+      console.log("Validation failed");
       return;
     }
 
@@ -136,6 +173,7 @@ export default function UserProfile() {
         birthDate: formData.birthDate,
       };
 
+      // ВИПРАВЛЕННЯ: Додаємо пароль тільки якщо він введений і пройшов валідацію
       if (formData.password && formData.password.trim()) {
         updateData.password = formData.password;
       }
@@ -219,19 +257,19 @@ export default function UserProfile() {
       <div className="profile-container">
         <div className="profile-card">
           <header className="profile-header-sub">
-            <button onClick={() => navigate("/admin")} className="back-btn-sub">
+            <button onClick={() => navigate("/admin")} className="back-btn-admin">
               ← Назад до адмін-панелі
             </button>
             <h1>Профіль користувача</h1>
           </header>
 
           {successMessage && (
-            <div className="success-message">✅ {successMessage}</div>
+            <div className="success-message">{successMessage}</div>
           )}
 
           {isEditing && (
             <div className="edit-mode-banner">
-              📝 Режим редагування: внесіть зміни та натисніть "Оновити дані"
+              Режим редагування: внесіть зміни та натисніть "Оновити дані"
             </div>
           )}
 
@@ -263,28 +301,7 @@ export default function UserProfile() {
           </div>
 
           <form onSubmit={handleSubmit} className="profile-form">
-            {/* Debug панель */}
-            <div
-              style={{
-                background: isEditing ? "#d4edda" : "#f8d7da",
-                color: isEditing ? "#155724" : "#721c24",
-                padding: "15px",
-                marginBottom: "15px",
-                borderRadius: "8px",
-                border: `2px solid ${isEditing ? "#28a745" : "#dc3545"}`,
-              }}
-            >
-              <div>
-                🔍 РЕЖИМ:{" "}
-                <strong>{isEditing ? "РЕДАГУВАННЯ" : "ПЕРЕГЛЯД"}</strong>
-              </div>
-              <div>
-                Статус полів:{" "}
-                <strong>
-                  {isEditing ? "🔓 РОЗБЛОКОВАНО" : "🔒 ЗАБЛОКОВАНО"}
-                </strong>
-              </div>
-            </div>
+            {/* Debug панель - ВИДАЛЕНО */}
 
             <div className="form-row">
               <div className="form-group">
@@ -413,7 +430,11 @@ export default function UserProfile() {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
+                    placeholder="Мінімум 6 символів"
                   />
+                  {errors.password && (
+                    <span className="error">{errors.password}</span>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -424,6 +445,9 @@ export default function UserProfile() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                   />
+                  {errors.confirmPassword && (
+                    <span className="error">{errors.confirmPassword}</span>
+                  )}
                 </div>
               </div>
             )}
@@ -436,7 +460,6 @@ export default function UserProfile() {
                     : "error-message"
                 }
               >
-                {errors.general.includes("не були змінені") ? "⚠️" : "❌"}{" "}
                 {errors.general}
               </div>
             )}
@@ -445,7 +468,7 @@ export default function UserProfile() {
               {isEditing ? (
                 <>
                   <button type="submit" className="save-btn" disabled={loading}>
-                    {loading ? "⏳ Збереження..." : "💾 Оновити дані"}
+                    {loading ? "Збереження..." : "Оновити дані"}
                   </button>
                   <button
                     type="button"
@@ -453,12 +476,12 @@ export default function UserProfile() {
                     onClick={handleCancel}
                     disabled={loading}
                   >
-                    ❌ Скасувати
+                    Скасувати
                   </button>
                 </>
               ) : (
                 <button type="button" className="edit-btn" onClick={handleEdit}>
-                  ✏️ Редагувати профіль
+                  Редагувати профіль
                 </button>
               )}
             </div>

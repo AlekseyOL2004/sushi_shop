@@ -301,6 +301,23 @@ export default function Header({ cartCount }) {
             ) : (
               <>
                 <button
+                  onClick={() => navigate("/track-order")}
+                  className={`nav-link ${isActive("/track-order") ? "active" : ""}`}
+                  title="Відстежити замовлення"
+                >
+                  <img
+                    src="/icon/box.png"
+                    alt="Відстежити"
+                    style={{
+                      width: "18px",
+                      height: "18px",
+                      minWidth: "18px",
+                      minHeight: "18px",
+                    }}
+                  />
+                  Відстежити
+                </button>
+                <button
                   onClick={() => navigate("/login")}
                   className={`login-btn ${isActive("/login") ? "active" : ""}`}
                 >
@@ -445,6 +462,58 @@ export default function Header({ cartCount }) {
           />
           Відгуки
         </button>
+        {!currentUser && (
+          <>
+            <button
+              onClick={() => handleNavigation("/track-order")}
+              className={`nav-link ${isActive("/track-order") ? "active" : ""}`}
+            >
+              <img
+                src="/icon/box.png"
+                alt="Відстежити"
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  minWidth: "18px",
+                  minHeight: "18px",
+                }}
+              />
+              Відстежити замовлення
+            </button>
+            <button
+              onClick={() => handleNavigation("/login")}
+              className={`login-btn ${isActive("/login") ? "active" : ""}`}
+            >
+              <img
+                src="/icon/profile.png"
+                alt="Вхід"
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  minWidth: "18px",
+                  minHeight: "18px",
+                }}
+              />
+              Увійти
+            </button>
+            <button
+              onClick={() => handleNavigation("/registration")}
+              className={`register-btn ${isActive("/registration") ? "active" : ""}`}
+            >
+              <img
+                src="/icon/profile.png"
+                alt="Реєстрація"
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  minWidth: "18px",
+                  minHeight: "18px",
+                }}
+              />
+              Реєстрація
+            </button>
+          </>
+        )}
       </nav>
     </>
   );

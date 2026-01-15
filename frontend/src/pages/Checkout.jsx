@@ -230,7 +230,7 @@ export default function Checkout() {
       }, 4000);
     } catch (error) {
       console.error('Order submission error:', error);
-      alert("❌ Помилка: " + error.message);
+      alert(" Помилка: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -301,12 +301,27 @@ export default function Checkout() {
                 <span>Ми зв'яжемося з вами найближчим часом</span>
               </div>
             </div>
-            <button 
-              onClick={() => navigate("/")} 
-              className="go-home-btn"
-            >
-              На головну
-            </button>
+            <div style={{ display: "flex", gap: "1rem", marginTop: "1.5rem" }}>
+              <button 
+                onClick={() => navigate("/")} 
+                className="go-home-btn"
+                style={{ flex: 1 }}
+              >
+                На головну
+              </button>
+              {!currentUser && (
+                <button 
+                  onClick={() => navigate("/track-order")} 
+                  className="go-home-btn"
+                  style={{ 
+                    flex: 1,
+                    background: "linear-gradient(135deg, #00c2a5 0%, #008b71 100%)"
+                  }}
+                >
+                  Відстежити замовлення
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

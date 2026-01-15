@@ -27,14 +27,14 @@ async function start() {
     }
 
     await mongoose.connect(uri);
-    console.log("✅ Connected to MongoDB");
+    console.log(" Connected to MongoDB");
 
     const appModule = require("./app");
     if (typeof appModule.startServer === "function") {
       appModule.startServer();
     }
   } catch (err) {
-    console.error("❌ Failed to start:", err.message || err);
+    console.error(" Failed to start:", err.message || err);
     console.error("Stack:", err.stack);
     process.exit(1);
   }
@@ -42,12 +42,12 @@ async function start() {
 
 // Handle unhandled rejections
 process.on("unhandledRejection", (reason, promise) => {
-  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+  console.error(" Unhandled Rejection at:", promise, "reason:", reason);
 });
 
 // Handle uncaught exceptions
 process.on("uncaughtException", (error) => {
-  console.error("❌ Uncaught Exception:", error);
+  console.error(" Uncaught Exception:", error);
   process.exit(1);
 });
 

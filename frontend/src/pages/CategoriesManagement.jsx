@@ -212,7 +212,7 @@ export default function CategoriesManagement() {
         throw new Error(errorData.message || "Помилка видалення категорії");
       }
 
-      setSuccessMessage("✅ Категорію успішно видалено!");
+      setSuccessMessage(" Категорію успішно видалено!");
       setTimeout(() => setSuccessMessage(""), 3000);
 
       await fetchCategories();

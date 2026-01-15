@@ -54,7 +54,7 @@ router.post("/", upload.single("image"), async (req, res) => {
 
     const imageUrl = `/uploads/${req.file.filename}`;
     
-    console.log(`✅ Image uploaded: ${req.file.filename}`);
+    console.log(` Image uploaded: ${req.file.filename}`);
     
     res.json({
       imageUrl: imageUrl,

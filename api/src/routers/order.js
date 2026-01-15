@@ -65,10 +65,8 @@ router.post("/", async (req, res) => {
 
     // Нарахувати бонусні бали користувачу
     if (userId && bonusPointsEarned > 0) {
-      const User = require("../models/user");
       const user = await User.findById(userId);
       if (user) {
-        // Спочатку додаємо бали, потім округлюємо до 2 знаків
         let newBonusPoints = (user.bonusPoints || 0) + bonusPointsEarned;
 
         // Списати використані бонусні роли
@@ -77,7 +75,7 @@ router.post("/", async (req, res) => {
           newBonusPoints = newBonusPoints - pointsToDeduct;
         }
 
-        // Округлення до 2 знаків після коми в кінці
+        // Округлення до 2 знаків після коми
         user.bonusPoints = Math.max(0, Math.round(newBonusPoints * 100) / 100);
 
         await user.save();
@@ -134,10 +132,10 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Оновити статус замовлення (менеджер, модератор, адмін)
+// Оновити статус замовлення
 router.patch("/:id/status", async (req, res) => {
   try {
-    const { status, managerId, managerRole } = req.body;
+    const { status, managerId } = req.body;
 
     if (!managerId) {
       return res.status(400).json({ message: "Manager ID required" });
@@ -205,7 +203,7 @@ router.patch("/:id/status", async (req, res) => {
   }
 });
 
-// Призначити менеджера замовленню
+// Призначити менеджера
 router.patch("/:id/assign", async (req, res) => {
   try {
     const { managerId } = req.body;
@@ -243,6 +241,74 @@ router.get("/user/:userId", async (req, res) => {
   } catch (error) {
     console.error("Get user orders error:", error);
     res.status(500).json({ message: error.message });
+  }
+});
+
+// НОВИЙ МАРШРУТ: Пошук замовлення за номером телефону
+router.post("/track", async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    console.log("=== TRACK ORDER REQUEST ===");
+    console.log("Phone received:", phone);
+
+    if (!phone || !phone.trim()) {
+      console.log("ERROR: Phone is empty");
+      return res.status(400).json({ message: "Phone number required" });
+    }
+
+    // Нормалізувати номер телефону
+    const inputPhoneClean = phone.replace(/[\s\-()]/g, '');
+    console.log("Normalized phone:", inputPhoneClean);
+
+    // Отримати всі замовлення
+    const allOrders = await Order.find({})
+      .populate({
+        path: "managerId",
+        select: "firstName lastName",
+        options: { strictPopulate: false }
+      })
+      .populate({
+        path: "userId", 
+        select: "firstName lastName email",
+        options: { strictPopulate: false }
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    console.log(`Total orders in DB: ${allOrders.length}`);
+
+    // Фільтрувати замовлення за телефоном
+    const orders = allOrders.filter(order => {
+      if (!order.customerPhone) return false;
+      
+      const dbPhoneClean = order.customerPhone.replace(/[\s\-()]/g, '');
+      
+      const matches = dbPhoneClean === inputPhoneClean || 
+                      dbPhoneClean.includes(inputPhoneClean) ||
+                      inputPhoneClean.includes(dbPhoneClean);
+      
+      if (matches) {
+        console.log(`Match found: ${order._id} - ${order.customerPhone}`);
+      }
+      
+      return matches;
+    });
+
+    const limitedOrders = orders.slice(0, 20);
+
+    console.log(`Found ${limitedOrders.length} matching orders`);
+    console.log("=== END TRACK REQUEST ===");
+
+    res.json(limitedOrders);
+  } catch (error) {
+    console.error("=== TRACK ORDER ERROR ===");
+    console.error("Error:", error);
+    console.error("Stack:", error.stack);
+    res.status(500).json({ 
+      message: "Помилка пошуку замовлень",
+      error: error.message 
+    });
   }
 });
 

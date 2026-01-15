@@ -83,3 +83,152 @@
 .back-btn:hover {
   background: #cbd5e0;
 }
+
+/* Success Toast для реєстрації */
+.success-toast-registration {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  z-index: 10000;
+  animation: slideInRight 0.4s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-content-registration {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  padding: 1.5rem 2rem;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  min-width: 350px;
+  max-width: 450px;
+  animation: pulse 0.5s ease;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+.toast-icon-wrapper {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toast-icon-success {
+  width: 32px;
+  height: 32px;
+  filter: brightness(0) invert(1);
+}
+
+.toast-text {
+  flex: 1;
+}
+
+.toast-text h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+}
+
+.toast-text p {
+  margin: 0 0 0.3rem 0;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.4;
+}
+
+.toast-hint {
+  font-size: 0.85rem !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-style: italic;
+  margin-top: 0.5rem !important;
+}
+
+@media (max-width: 768px) {
+  .success-toast-registration {
+    top: 80px;
+    right: 10px;
+    left: 10px;
+  }
+
+  .toast-content-registration {
+    min-width: auto;
+    width: 100%;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .toast-icon-success {
+    width: 28px;
+    height: 28px;
+  }
+
+  .toast-text h3 {
+    font-size: 1.1rem;
+  }
+
+  .toast-text p {
+    font-size: 0.9rem;
+  }
+
+  .toast-hint {
+    font-size: 0.8rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .success-toast-registration {
+    top: 70px;
+  }
+
+  .toast-content-registration {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .toast-icon-wrapper {
+    padding: 0.6rem;
+  }
+
+  .toast-icon-success {
+    width: 24px;
+    height: 24px;
+  }
+
+  .toast-text h3 {
+    font-size: 1rem;
+  }
+
+  .toast-text p {
+    font-size: 0.85rem;
+  }
+}

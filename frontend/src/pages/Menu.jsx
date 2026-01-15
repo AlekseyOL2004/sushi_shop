@@ -35,11 +35,11 @@ export default function Menu() {
     try {
       setLoading(true);
       console.log('API_BASE:', API_BASE);
-      console.log('Fetching menu from:', `${API_BASE}/menu`);
+      console.log('Fetching menu from:', `${API_BASE}/menu?available=true`);
       console.log('Fetching categories from:', `${API_BASE}/categories?active=true`);
       
       const [menuRes, categoriesRes] = await Promise.all([
-        fetch(`${API_BASE}/menu`),
+        fetch(`${API_BASE}/menu?available=true`), // ВИПРАВЛЕННЯ: Додано фільтр
         fetch(`${API_BASE}/categories?active=true`),
       ]);
 
@@ -51,10 +51,7 @@ export default function Menu() {
         console.log('Raw menu data:', menuData);
         console.log('Menu data length:', menuData.length);
         
-        const availableItems = menuData.filter((item) => item.isAvailable);
-        console.log('Available items:', availableItems.length);
-        
-        setMenuItems(availableItems);
+        setMenuItems(menuData); // Тепер вже відфільтровано на backend
       } else {
         const errorText = await menuRes.text();
         console.error('Menu fetch failed. Status:', menuRes.status);

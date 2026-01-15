@@ -36,7 +36,7 @@ export default function Reviews() {
       setLoading(true);
       const [reviewsRes, menuRes] = await Promise.all([
         fetch(`${API_BASE}/reviews`),
-        fetch(`${API_BASE}/menu`),
+        fetch(`${API_BASE}/menu?available=true`), // ВИПРАВЛЕННЯ: Додано фільтр available=true
       ]);
 
       if (reviewsRes.ok) {
@@ -46,7 +46,7 @@ export default function Reviews() {
 
       if (menuRes.ok) {
         const menuData = await menuRes.json();
-        setMenuItems(menuData);
+        setMenuItems(menuData); // Тепер це будуть тільки доступні товари
       }
     } catch (error) {
       console.error("Error:", error);

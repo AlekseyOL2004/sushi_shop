@@ -292,7 +292,7 @@ export default function EditProduct() {
                         (cat) => cat.key === formData.category
                       ) && (
                         <option value={formData.category} disabled>
-                          ⚠️ {formData.category} (неактивна категорія)
+                           {formData.category} (неактивна категорія)
                         </option>
                       )}
                   </>
@@ -302,7 +302,7 @@ export default function EditProduct() {
                 formData.category &&
                 !categories.find((cat) => cat.key === formData.category) && (
                   <span className="warning-text">
-                    ⚠️ Поточна категорія "{formData.category}" неактивна або
+                     Поточна категорія "{formData.category}" неактивна або
                     видалена.{" "}
                     <button
                       type="button"

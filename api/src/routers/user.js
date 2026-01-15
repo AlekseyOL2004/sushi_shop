@@ -17,7 +17,7 @@ router.post("/", async (req, res) => {
     if (["admin", "moderator", "manager"].includes(userData.role)) {
       userData.role = "customer";
       console.log(
-        "⚠️ Attempt to register with elevated role blocked. Set to customer."
+        " Attempt to register with elevated role blocked. Set to customer."
       );
     }
 
@@ -77,19 +77,19 @@ router.post("/login", async (req, res) => {
     let user = await User.findOne({ email }).lean();
 
     if (!user) {
-      console.log("❌ User not found:", email);
+      console.log(" User not found:", email);
       return res.status(401).json({ message: "Невірний email або пароль" });
     }
 
     console.log("User from DB (raw):", JSON.stringify(user, null, 2));
 
     if (user.password !== password) {
-      console.log("❌ Invalid password");
+      console.log(" Invalid password");
       return res.status(401).json({ message: "Невірний email або пароль" });
     }
 
     if (!user.role || user.isActive === undefined || user.isActive === null) {
-      console.log("⚠️ User missing fields, updating...");
+      console.log(" User missing fields, updating...");
 
       const updates = {};
       if (!user.role) {
@@ -106,7 +106,7 @@ router.post("/login", async (req, res) => {
     }
 
     if (user.isActive === false) {
-      console.log("❌ User deactivated");
+      console.log("User deactivated");
       return res.status(403).json({
         message: "Ваш акаунт деактивовано. Зверніться до адміністратора.",
       });
@@ -126,7 +126,7 @@ router.post("/login", async (req, res) => {
       createdAt: user.createdAt,
     };
 
-    console.log("✅ LOGIN SUCCESS - Response:");
+    console.log(" LOGIN SUCCESS - Response:");
     console.log(JSON.stringify(userResponse, null, 2));
     console.log("Role:", userResponse.role);
     console.log("IsActive:", userResponse.isActive);
@@ -136,7 +136,7 @@ router.post("/login", async (req, res) => {
       user: userResponse,
     });
   } catch (error) {
-    console.error("❌ Login error:", error);
+    console.error(" Login error:", error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -203,11 +203,11 @@ router.patch("/:id/role", async (req, res) => {
     delete userResponse.password;
 
     console.log(
-      `✅ SUCCESS: Admin ${admin.email} changed role of ${user.email} to ${role}`
+      ` SUCCESS: Admin ${admin.email} changed role of ${user.email} to ${role}`
     );
     res.json(userResponse);
   } catch (error) {
-    console.error("❌ Update role error:", error);
+    console.error(" Update role error:", error);
     res.status(400).json({ message: error.message });
   }
 });
@@ -257,7 +257,7 @@ router.patch("/:id/status", async (req, res) => {
     delete userResponse.password;
 
     console.log(
-      `✅ Admin ${admin.email} ${newStatus ? "activated" : "deactivated"} ${
+      ` Admin ${admin.email} ${newStatus ? "activated" : "deactivated"} ${
         user.email
       }`
     );
@@ -297,7 +297,7 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    console.log(`✅ Admin ${admin.email} deleted user ${user.email}`);
+    console.log(` Admin ${admin.email} deleted user ${user.email}`);
     res.json({ message: "User deleted successfully", deletedUser: user.email });
   } catch (error) {
     console.error("Delete user error:", error);
@@ -325,7 +325,7 @@ router.patch("/:id", async (req, res) => {
 
     const user = await User.findById(req.params.id);
     if (!user) {
-      console.log("❌ User not found");
+      console.log(" User not found");
       return res.status(404).json({ message: "User not found" });
     }
 
@@ -352,7 +352,7 @@ router.patch("/:id", async (req, res) => {
     const userResponse = user.toObject();
     delete userResponse.password;
 
-    console.log(`✅ User ${user.email} updated profile`);
+    console.log(` User ${user.email} updated profile`);
     res.json(userResponse);
   } catch (error) {
     console.error("Update profile error:", error);

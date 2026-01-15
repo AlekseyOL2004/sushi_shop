@@ -32,11 +32,14 @@ export default function SushiShop() {
       try {
         setLoading(true);
         const [menuRes, reviewsRes] = await Promise.all([
-          fetch(`${API_BASE}/menu`),
+          fetch(`${API_BASE}/menu?available=true`), // ВИПРАВЛЕННЯ: Додано фільтр available=true
           fetch(`${API_BASE}/reviews?limit=3&approved=true`),
         ]);
 
-        if (menuRes.ok) setMenuItems(await menuRes.json());
+        if (menuRes.ok) {
+          const menuData = await menuRes.json();
+          setMenuItems(menuData); // Тепер це будуть тільки доступні товари
+        }
         if (reviewsRes.ok) setReviews(await reviewsRes.json());
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -571,7 +574,7 @@ export default function SushiShop() {
                           fontWeight: "bold",
                         }}
                       >
-                        + Додати
+                        Додати
                       </button>
                     </div>
                   </div>
@@ -609,7 +612,7 @@ export default function SushiShop() {
               },
               {
                 title: "Швидка доставка",
-                text: "Доставимо за 30-40 хвилин або знижка 20%",
+                text: "Доставимо за 30-40 хвилин",
               },
               {
                 title: "Досвідчені шефи",
@@ -617,7 +620,7 @@ export default function SushiShop() {
               },
               {
                 title: "Зручна оплата",
-                text: "Готівка, картка, LiqPay, Apple Pay",
+                text: "Готівка, картка (Visa, MasterCard)",
               },
             ].map((item, i) => (
               <div

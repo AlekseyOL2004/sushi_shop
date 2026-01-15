@@ -5,7 +5,7 @@ const { mongoURL } = require("./configuration/index");
 async function updateExistingUsers() {
   try {
     await mongoose.connect(mongoURL);
-    console.log("✅ Connected to MongoDB");
+    console.log(" Connected to MongoDB");
 
     // Оновити всіх користувачів без поля role
     const result = await User.updateMany(
@@ -19,7 +19,7 @@ async function updateExistingUsers() {
     );
 
     console.log(
-      `✅ Updated ${result.modifiedCount} users with default role and status`
+      ` Updated ${result.modifiedCount} users with default role and status`
     );
 
     // Показати всіх користувачів
@@ -35,7 +35,7 @@ async function updateExistingUsers() {
 
     process.exit(0);
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error("Error:", error);
     process.exit(1);
   }
 }

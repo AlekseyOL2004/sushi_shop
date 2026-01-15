@@ -538,11 +538,11 @@ export default function OrdersManagement() {
               )}
             </div>
 
-            <div className="modal-footer">
+            {/* <div className="modal-footer">
               <button onClick={closeDetailsModal} className="close-details-btn">
                 Закрити
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       )}

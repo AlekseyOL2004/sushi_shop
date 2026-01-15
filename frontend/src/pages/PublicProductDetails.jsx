@@ -138,7 +138,7 @@ export default function PublicProductDetails() {
             </div>
             {!product.isAvailable && (
               <div className="unavailable-overlay">
-                <span>❌ Товар недоступний</span>
+                <span> Товар недоступний</span>
               </div>
             )}
           </div>
@@ -159,8 +159,8 @@ export default function PublicProductDetails() {
                 }`}
               >
                 {product.isAvailable
-                  ? "✅ В наявності"
-                  : "❌ Немає в наявності"}
+                  ? " В наявності"
+                  : " Немає в наявності"}
               </span>
             </div>
 
@@ -201,7 +201,7 @@ export default function PublicProductDetails() {
 
             {product.isAvailable && (
               <button onClick={handleAddToCart} className="add-to-cart-btn">
-                🛒 Додати в кошик
+                 Додати в кошик
               </button>
             )}
           </div>
@@ -209,13 +209,13 @@ export default function PublicProductDetails() {
 
         <div className="product-details-grid">
           <div className="detail-card">
-            <h3>📝 Опис</h3>
+            <h3> Опис</h3>
             <p>{product.description}</p>
           </div>
 
           {product.ingredients && (
             <div className="detail-card">
-              <h3>🥘 Інгредієнти</h3>
+              <h3> Інгредієнти</h3>
               <p>{product.ingredients}</p>
             </div>
           )}

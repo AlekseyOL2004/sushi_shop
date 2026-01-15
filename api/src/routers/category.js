@@ -51,7 +51,7 @@ router.post("/", async (req, res) => {
     });
 
     await category.save();
-    console.log(`✅ Category created: ${category.label} by ${adminId}`);
+    console.log(` Category created: ${category.label} by ${adminId}`);
     res.status(201).json(category);
   } catch (error) {
     console.error("Create category error:", error);
@@ -91,7 +91,7 @@ router.patch("/:id", async (req, res) => {
       return res.status(404).json({ message: "Category not found" });
     }
 
-    console.log(`✅ Category updated: ${category.label} by ${adminId}`);
+    console.log(` Category updated: ${category.label} by ${adminId}`);
     res.json(category);
   } catch (error) {
     console.error("Update category error:", error);
@@ -116,7 +116,7 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ message: "Category not found" });
     }
 
-    console.log(`✅ Category deleted: ${category.label} by ${adminId}`);
+    console.log(` Category deleted: ${category.label} by ${adminId}`);
     res.json({
       message: "Category deleted successfully",
       deletedCategory: category,

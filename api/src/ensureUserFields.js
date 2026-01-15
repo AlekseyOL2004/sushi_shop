@@ -5,7 +5,7 @@ const { mongoURL } = require("./configuration/index");
 async function ensureUserFields() {
   try {
     await mongoose.connect(mongoURL);
-    console.log("✅ Connected to MongoDB");
+    console.log(" Connected to MongoDB");
 
     const result = await User.updateMany(
       {
@@ -19,7 +19,7 @@ async function ensureUserFields() {
       }
     );
 
-    console.log(`✅ Updated ${result.modifiedCount} users`);
+    console.log(` Updated ${result.modifiedCount} users`);
 
     const users = await User.find({}, { email: 1, role: 1, isActive: 1 });
     console.log("\n📋 All users:");
@@ -31,7 +31,7 @@ async function ensureUserFields() {
 
     process.exit(0);
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error(" Error:", error);
     process.exit(1);
   }
 }

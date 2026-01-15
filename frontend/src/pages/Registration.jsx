@@ -19,6 +19,7 @@ export default function Registration() {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -69,7 +70,7 @@ export default function Registration() {
             address: formData.address,
             birthDate: formData.birthDate,
             password: formData.password,
-            role: "customer", // Додаємо роль за замовчуванням
+            role: "customer",
           }),
         });
 
@@ -78,8 +79,13 @@ export default function Registration() {
           throw new Error(errorData.message || "Помилка реєстрації");
         }
 
-        alert("Реєстрація успішна! Ви зареєстровані як клієнт.");
-        navigate("/");
+        // Показати toast успіху
+        setShowSuccessToast(true);
+
+        // Через 2 секунди перенаправити на сторінку входу
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
       } catch (error) {
         alert("Помилка: " + error.message);
       }
@@ -97,6 +103,28 @@ export default function Registration() {
   return (
     <div style={{ minHeight: "100vh", background: "#f5f7fa" }}>
       <Header />
+
+      {/* Success Toast */}
+      {showSuccessToast && (
+        <div className="success-toast-registration">
+          <div className="toast-content-registration">
+            <div className="toast-icon-wrapper">
+              <img
+                src="/icon/done.png"
+                alt="Успіх"
+                className="toast-icon-success"
+              />
+            </div>
+            <div className="toast-text">
+              <h3>Реєстрація успішна!</h3>
+              <p>Ви зареєстровані як клієнт</p>
+              <p className="toast-hint">
+                Зараз ви будете перенаправлені на сторінку входу...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="registration-container">
         <div className="registration-card">

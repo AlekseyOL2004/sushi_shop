@@ -5,7 +5,7 @@ const { mongoURL } = require("./configuration/index");
 async function fixUsers() {
   try {
     await mongoose.connect(mongoURL);
-    console.log("✅ Connected to MongoDB");
+    console.log(" Connected to MongoDB");
 
     // Знайти всіх користувачів
     const users = await User.find();
@@ -31,12 +31,12 @@ async function fixUsers() {
 
       if (needsUpdate) {
         await User.updateOne({ _id: user._id }, { $set: updates });
-        console.log(`✅ Fixed user: ${user.email}`, updates);
+        console.log(` Fixed user: ${user.email}`, updates);
         fixed++;
       }
     }
 
-    console.log(`\n✅ Fixed ${fixed} users`);
+    console.log(`\n Fixed ${fixed} users`);
 
     // Показати всіх користувачів
     const allUsers = await User.find().select("-password");
@@ -49,7 +49,7 @@ async function fixUsers() {
 
     process.exit(0);
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error(" Error:", error);
     process.exit(1);
   }
 }
