@@ -1,6 +1,20 @@
 version: '3.8'
 
 services:
+  # Nginx - єдина точка входу (порт 80)
+  nginx:
+    container_name: nginx_prod
+    build:
+      context: ./nginx
+    ports:
+      - '80:80'
+    depends_on:
+      - api
+      - frontend
+    volumes:
+      # Монтуємо том, куди frontend поклав зібрані файли
+      - frontend_build:/usr/share/nginx/html
+
   api:
     container_name: api_prod
     build:
@@ -8,8 +22,9 @@ services:
       args:
         NODE_IMAGE: node:22-bullseye-slim
     command: npm start
-    ports:
-      - '3001:3001'
+    # expose - відкриває порт тільки для інших контейнерів, не назовні
+    expose:
+      - '3001'
     environment:
       - PORT=3001
       - HOST=0.0.0.0
@@ -26,11 +41,11 @@ services:
       dockerfile: Dockerfile.prod
       args:
         NODE_IMAGE: node:22-bullseye-slim
-    command: serve -s build -l 3000
-    ports:
-      - '3000:3000'
-    depends_on:
-      - api
+    # Після збірки копіюємо файли у спільний том
+    volumes:
+      - frontend_build:/usr/src/app/dist
+    # Проста команда, щоб контейнер не падав відразу (або можна використовувати для build)
+    command: sh -c "cp -r /usr/src/app/dist/* /usr/src/app/dist/ && echo 'Files copied'"
 
   api_db:
     container_name: api_db_prod
@@ -40,3 +55,4 @@ services:
 
 volumes:
   mongodb_api:
+  frontend_build: # Спільний том для передачі файлів від React до Nginx

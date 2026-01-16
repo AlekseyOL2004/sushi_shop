@@ -6,7 +6,12 @@
 ![React](https://img.shields.io/badge/React-18-blue)
 ![Vite](https://img.shields.io/badge/Vite-4.3.9-lightgrey)
 ![Docker](https://img.shields.io/badge/Docker-%20-blue)
+![Backend CI/CD](https://github.com/AlekseyOL2004/sushi_shop/actions/workflows/deploy-backend.yml/badge.svg)
 ![Frontend Deploy](https://github.com/AlekseyOL2004/sushi_shop/actions/workflows/deploy-frontend-azure.yml/badge.svg?branch=frontend)
+
+> **🚀 ІНСТРУКЦІЯ З ДЕПЛОЮ В AZURE**
+>
+> Покроковий гайд як задеплоїти проект з повним CI/CD (Frontend + Backend + DB): [**AZURE_DEPLOY_GUIDE.md**](./AZURE_DEPLOY_GUIDE.md)
 
 | Компонент | Мова / Фреймворк        | Основні бібліотеки / інструменти                                                 | Коротко                                                                                            |
 | --------- | ----------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |

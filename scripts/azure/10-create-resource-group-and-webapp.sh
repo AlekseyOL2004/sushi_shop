@@ -5,7 +5,7 @@
 set -e
 
 RESOURCE_GROUP="${1:-sushi-shop-rg}"
-LOCATION="${2:-northeurope}"
+LOCATION="${2:-polandcentral}"
 WEBAPP_NAME="${3:-ztu-sushi-shop}"
 APP_SERVICE_PLAN="${4:-sushi-shop-plan}"
 NODE_RUNTIME="node|20-lts"
@@ -14,7 +14,7 @@ SKU="F1"
 # === Пояснення для Sushi Shop проекту ===
 # Дефолтні значення налаштовані для вашого проекту:
 #   RESOURCE_GROUP=sushi-shop-rg (група ресурсів для суші магазину)
-#   LOCATION=northeurope (Північна Європа - близько до України)
+#   LOCATION=polandcentral (Poland Central - часто доступний для студентських підписок)
 #   WEBAPP_NAME=ztu-sushi-shop (назва веб-апу для фронтенду)
 #   APP_SERVICE_PLAN=sushi-shop-plan (план App Service)
 #   NODE_RUNTIME=node|20-lts (Node.js 20 LTS)

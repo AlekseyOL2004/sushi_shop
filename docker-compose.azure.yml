@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # MongoDB з персистентністю в Azure
+  api_db:
+    image: mongo:latest
+    container_name: api_db_azure
+    restart: always
+    volumes:
+      # ${WEBAPP_STORAGE_HOME} - це змінна середовища Azure Web App
+      # Вона вказує на спільне сховище файлів
+      - ${WEBAPP_STORAGE_HOME}/site/wwwroot/data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=SecurePassword123!
+
+  # Backend API
+  api:
+    # !!! ЗАМІНІТЬ НА ВАШОГО КОРИСТУВАЧА DOCKER HUB !!!
+    image: AlekseyOL2004/sushi-api:latest
+    container_name: api_azure
+    restart: always
+    ports:
+      # Azure маршрутизує вхідний трафік (80/443) на перший відкритий порт контейнера. 
+      # Ми мапимо 80 контейнера на 3001 додатку.
+      - "80:3001"
+    environment:
+      - PORT=3001
+      - HOST=0.0.0.0
+      # Використовуємо ім'я сервісу 'api_db' для підключення
+      - MONGO_URL=mongodb://admin:SecurePassword123!@api_db:27017/sushi_shop?authSource=admin
+    depends_on:
+      - api_db
