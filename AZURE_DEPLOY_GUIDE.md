@@ -159,7 +159,19 @@ az ad sp create-for-rbac \
 
 ## 📝 Крок 5: Створення Workflow для автоматичного деплою бекенду
 
-Створіть файл `.github/workflows/deploy-backend.yml`:
+**ВАЖЛИВО:** Переконайтесь що у вас є тільки **один** workflow файл для кожного компонента!
+
+### Структура workflow файлів
+
+```
+.
+└── .github
+    └── workflows
+        ├── deploy-backend.yml
+        └── deploy-frontend.yml
+```
+
+### Приклад вмісту `deploy-backend.yml`
 
 ```yaml
 name: Build and Deploy Backend
@@ -308,26 +320,70 @@ az webapp config set  --resource-group sushi-project-rg  --name ztu-sushi-fronte
 
 ## ⚠️ Вирішення проблем
 
-### FileNotFoundError: docker-compose.azure.yml
+### Backend показує 503 (Service Unavailable)
 
-**Проблема:** Команда `az webapp create` шукає файл у поточній директорії.
+**Причина:** Docker контейнер не запустився.
 
-**Рішення:**
-- Якщо локально: `cd` у папку проекту перед виконанням команди
-- Якщо Cloud Shell: Завантажте файл через Upload
-
-### Web App не запускається
-
-Подивіться логи:
+**Діагностика:**
 ```bash
+# Подивіться логи
 az webapp log tail --name ztu-sushi-backend --resource-group sushi-project-rg
+
+# Перевірте чи існує Docker образ
+# Відкрийте: https://hub.docker.com/r/alekseyol2004/sushi-api
 ```
 
-### Docker образ не знайдений
+**Рішення:**
+```powershell
+# 1. Зберіть образ локально
+cd api
+docker build -t alekseyol2004/sushi-api:latest .
 
-Переконайтесь що:
-1. Образ існує на Docker Hub: https://hub.docker.com/r/AlekseyOL2004/sushi-api
-2. Ім'я образу в `docker-compose.azure.yml` правильне
+# 2. Залогіньтесь в Docker Hub
+docker login
+
+# 3. Запуште образ
+docker push alekseyol2004/sushi-api:latest
+
+# 4. Перезапустіть Web App
+az webapp restart --name ztu-sushi-backend --resource-group sushi-project-rg
+```
+
+### Frontend показує 404 (Not Found)
+
+**Причина:** Файли `dist/` не завантажені на сервер.
+
+**Рішення 1: Через GitHub Actions**
+```bash
+git checkout frontend
+git add .github/workflows/deploy-frontend.yml
+git commit -m "Deploy frontend"
+git push origin frontend
+```
+
+**Рішення 2: Ручний деплой**
+```powershell
+cd frontend
+npm run build
+az webapp deploy --resource-group sushi-project-rg --name ztu-sushi-frontend --src-path dist
+```
+
+### MongoDB не підключається
+
+**Симптом:** Логи показують "MongoServerError: Authentication failed"
+
+**Рішення:**
+Перевірте що змінна `WEBSITES_ENABLE_APP_SERVICE_STORAGE=TRUE` встановлена:
+```bash
+az webapp config appsettings set \
+  --resource-group sushi-project-rg \
+  --name ztu-sushi-backend \
+  --settings WEBSITES_ENABLE_APP_SERVICE_STORAGE=TRUE
+```
+
+### favicon.ico помилки
+
+**Це нормально!** Браузер шукає іконку сайту. Додайте `favicon.ico` в `frontend/public/` якщо хочете позбутися помилки.
 
 ---
 
