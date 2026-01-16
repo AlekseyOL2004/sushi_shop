@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_USERNAME: knm251oos
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   IMAGE_NAME: sushi-api
   AZURE_WEBAPP_NAME: ztu-sushi-backend
   AZURE_RESOURCE_GROUP: sushi-project-rg
@@ -21,7 +21,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Debug крок для перевірки чи secret підтягується
       - name: Debug Docker Username
         run: |
           if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then
