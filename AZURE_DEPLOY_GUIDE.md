@@ -216,39 +216,62 @@ jobs:
 
 ---
 
-## 🌐 Крок 6: Деплой Фронтенду (Static Web App)
+## 🌐 Крок 6: Деплой Фронтенду (Azure App Service)
 
-1.  **Оновіть `frontend/.env.production`**:
-    
-    ```
-    VITE_API_BASE=https://ztu-sushi-backend.azurewebsites.net
-    ```
-    
-    *(Замініть `ztu-sushi-backend` на ваше ім'я Web App з Кроку 3)*
+Оскільки Static Web Apps недоступні в `polandcentral`, ми використаємо **Azure App Service (Linux)** для фронтенду.
 
-2.  **Закомітьте зміни**:
-    ```bash
-    git add frontend/.env.production docker-compose.azure.yml .github/workflows/deploy-backend.yml
-    git commit -m "Configure Azure deployment"
-    git push
-    ```
+### 1. Оновіть `frontend/.env.production`
 
-3.  **Створіть Static Web App через Azure Portal** (найпростіше через браузер):
-    
-    - Відкрийте https://portal.azure.com
-    - **Create a resource** → **Static Web App**
-    - **Resource Group**: `sushi-project-rg`
-    - **Name**: `sushi-frontend`
-    - **Region**: `Poland Central`
-    - **Deployment source**: **GitHub** (залогіньтесь)
-    - **Repository**: `AlekseyOL2004/sushi_shop`
-    - **Branch**: `frontend` (або `main`, залежно від вашої структури)
-    - **Build Presets**: `React`
-    - **App location**: `/frontend`
-    - **Output location**: `dist`
-    - Натисніть **Review + create** → **Create**
+```
+VITE_API_BASE=https://ztu-sushi-backend.azurewebsites.net
+```
 
-Azure автоматично створить workflow файл у вашому репозиторії.
+*(Замініть `ztu-sushi-backend` на ваше ім'я Web App з Кроку 3)*
+
+### 2. Закомітьте зміни
+
+```bash
+git add frontend/.env.production docker-compose.azure.yml .github/workflows/deploy-backend.yml
+git commit -m "Configure Azure deployment"
+git push
+```
+
+### 3. Створіть App Service для фронтенду
+
+Ми вже створили бекенд в App Service, тому просто повторимо ці кроки для фронтенду.
+
+#### Варіант A: Локальний термінал (рекомендовано)
+
+```bash
+# 1. Увійдіть в Azure (якщо ще не залогінені)
+az login
+
+# 2. Створіть Web App для фронтенду (замініть ztu-sushi-frontend на унікальне ім'я, якщо потрібно)
+az webapp create \
+  --resource-group sushi-project-rg \
+  --plan sushi-plan \
+  --name ztu-sushi-frontend \
+  --runtime "NODE|14-lts" \
+  --deployment-source-url https://github.com/AlekseyOL2004/sushi_shop \
+  --deployment-source-branch frontend \
+  --deployment-source-repo-url https://github.com/AlekseyOL2004/sushi_shop.git \
+  --deployment-source-access-token ${{ secrets.GITHUB_TOKEN }}
+```
+
+#### Варіант B: Azure Cloud Shell
+
+```bash
+# 1. Створіть Web App для фронтенду
+az webapp create \
+  --resource-group sushi-project-rg \
+  --plan sushi-plan \
+  --name ztu-sushi-frontend \
+  --runtime "NODE|14-lts" \
+  --deployment-source-url https://github.com/AlekseyOL2004/sushi_shop \
+  --deployment-source-branch frontend \
+  --deployment-source-repo-url https://github.com/AlekseyOL2004/sushi_shop.git \
+  --deployment-source-access-token ${{ secrets.GITHUB_TOKEN }}
+```
 
 ---
 
@@ -264,7 +287,7 @@ Azure автоматично створить workflow файл у вашому 
 2.  **Фронтенд**:
     *   Змінюєте файли в папці `frontend/` → `git push`
     *   GitHub Action (створений Azure) збирає React
-    *   Публікує на Static Web App
+    *   Публікує на App Service
 
 ---
 
@@ -279,7 +302,7 @@ Azure автоматично створить workflow файл у вашому 
 ☐ 6. Додати AZURE_CREDENTIALS в GitHub Secrets
 ☐ 7. Створити .github/workflows/deploy-backend.yml
 ☐ 8. Оновити frontend/.env.production
-☐ 9. Створити Static Web App через Portal
+☐ 9. Створити App Service для фронтенду
 ☐ 10. git push і перевірити Actions
 ```
 
