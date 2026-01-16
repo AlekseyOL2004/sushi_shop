@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_USERNAME: knm251oos
   IMAGE_NAME: sushi-api
   AZURE_WEBAPP_NAME: ztu-sushi-backend
   AZURE_RESOURCE_GROUP: sushi-project-rg
