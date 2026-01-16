@@ -114,7 +114,7 @@ export default function Login() {
                 onClick={() => navigate("/")}
                 className="link-btn"
               >
-                {/* Тест3 */}
+                {/* Тест4 */}
                 Повернутись на головну
               </button>
             </div>

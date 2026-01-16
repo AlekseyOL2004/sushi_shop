@@ -2,7 +2,7 @@ name: Deploy Frontend to Azure App Service
 
 on:
   push:
-    branches: [ "main", "frontend" ]  # <--- Додано frontend
+    branches: [ "main", "frontend" ]
     paths:
       - 'frontend/**'
   workflow_dispatch:
@@ -25,7 +25,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install  # <--- Змінено: npm install замість npm cistall  # <--- Змінено з npm ci на npm install
         working-directory: frontend
 
       - name: Build application
