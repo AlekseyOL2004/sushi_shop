@@ -2,16 +2,16 @@ name: Build and Deploy Backend
 
 on:
   push:
-    branches: [ "main", "frontend" ]  # <--- Додано frontend
+    branches: [ "main", "frontend" ]
     paths:
       - 'api/**'
       - 'docker-compose.azure.yml'
   workflow_dispatch:
 
 env:
-  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_USERNAME: knm251_oos@student.ztu.edu.ua  # <--- ТИМЧАСОВО: hardcode для перевірки
   IMAGE_NAME: sushi-api
-  AZURE_WEBAPP_NAME: ztu-sushi-backend  # <--- Змініть на ваше ім'я Web App
+  AZURE_WEBAPP_NAME: ztu-sushi-backend
   AZURE_RESOURCE_GROUP: sushi-project-rg
 
 jobs:
@@ -21,19 +21,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
+      - name: Log in to Docker Hubується secret
+        uses: docker/login-action@v3R_USERNAME is set
+        with:|
+          username: ${{ env.DOCKER_USERNAME }}  # <--- Використовуємо env замість secrets
           password: ${{ secrets.DOCKER_PASSWORD }}
-
+            exit 1
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v5t (length: ${#DOCKER_USERNAME})"
         with:
           context: ./api
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-
+          push: trueRNAME: ${{ secrets.DOCKER_USERNAME }}
+          tags: ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+      - name: Log in to Docker Hub
+  deploy-to-azure:er/login-action@v3
+    needs: build-and-push
+    runs-on: ubuntu-latestcrets.DOCKER_USERNAME }}
+    steps:password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to Azure
+        uses: azure/login@v2 Docker image
+        with: docker/build-push-action@v5
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          context: ./api
+      - name: Restart Azure Web App to pull new image
+        run: |: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          az webapp restart --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
   deploy-to-azure:
     needs: build-and-push
     runs-on: ubuntu-latest
