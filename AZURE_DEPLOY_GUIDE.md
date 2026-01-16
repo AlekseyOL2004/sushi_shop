@@ -27,7 +27,7 @@
 
 | Назва Secret | Значення |
 |--------------|----------|
-| `DOCKER_USERNAME` | Ваш логін Docker Hub (`AlekseyOL2004` або інший) |
+| `DOCKER_USERNAME` | Ваш логін Docker Hub (`AlekseyOL2004`) |
 | `DOCKER_PASSWORD` | Ваш пароль Docker Hub (або [Access Token](https://hub.docker.com/settings/security)) |
 | `AZURE_CREDENTIALS` | JSON для доступу (отримаємо в Кроці 4) |
 
@@ -51,7 +51,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=SecurePassword123!
 
   api:
-    image: AlekseyOL2004/sushi-api:latest  # <--- ЗАМІНІТЬ НА ВАШ ЛОГІН
+    image: AlekseyOL2004/sushi-api:latest  # <--- ВАШ ЛОГІН DOCKER HUB
     restart: always
     ports:
       - "80:3001"
@@ -69,7 +69,7 @@ services:
 
 ## 🚀 Крок 3: Деплой Бекенду та БД (Azure Web App)
 
-### Варіант A: Локальний термінал (PowerShell/Git Bash)
+### Варіант A: Локальний термінал (PowerShell)
 
 ```powershell
 # 1. Перейдіть у папку проекту
@@ -96,12 +96,11 @@ az webapp config appsettings set `
   --settings WEBSITES_ENABLE_APP_SERVICE_STORAGE=TRUE
 ```
 
-### Варіант B: Azure Cloud Shell
+### Варіант B: Azure Cloud Shell (Bash)
 
 ```bash
 # 1. Завантажте файл docker-compose.azure.yml
-# Натисніть кнопку "Upload/Download files" (іконка {} вгорі) -> Upload
-# Виберіть файл docker-compose.azure.yml з вашого комп'ютера
+# Натисніть кнопку "Upload/Download files" -> Upload
 
 # 2. Перевірте що файл завантажився
 ls docker-compose.azure.yml
@@ -246,7 +245,9 @@ git push
 az login
 
 # 2. Створіть Web App для фронтенду (замініть ztu-sushi-frontend на унікальне ім'я, якщо потрібно)
-az webapp create  --resource-group sushi-project-rg  --plan sushi-plan --name ztu-sushi-frontend  --runtime "NODE|20-lts"  --deployment-source-url https://github.com/AlekseyOL2004/sushi_shop  --deployment-source-branch frontend  --deployment-source-repo-url https://github.com/AlekseyOL2004/sushi_shop.git  --deployment-source-access-token ${{ secrets.GITHUB_TOKEN }}
+az webapp create  --resource-group sushi-project-rg  --plan sushi-plan --name ztu-sushi-frontend  --runtime "NODE:20-lts"  --deployment-source-url https://github.com/AlekseyOL2004/sushi_shop  --deployment-source-branch frontend  --deployment-source-repo-url https://github.com/AlekseyOL2004/sushi_shop.git  --deployment-source-access-token
+
+az webapp create --resource-group sushi-project-rg  --plan sushi-plan  --name ztu-sushi-frontend  --runtime "NODE:20-lts"
 ```
 
 #### Варіант B: Azure Cloud Shell
@@ -261,10 +262,16 @@ az webapp create \
   --deployment-source-url https://github.com/AlekseyOL2004/sushi_shop \
   --deployment-source-branch frontend \
   --deployment-source-repo-url https://github.com/AlekseyOL2004/sushi_shop.git \
-  --deployment-source-access-token ${{ secrets.GITHUB_TOKEN }}
+  --deployment-source-access-token
 ```
 
 ---
+
+
+az webapp config set  --resource-group sushi-project-rg  --name ztu-sushi-frontend  --startup-file "npx serve -s dist -l 8080"
+
+  az webapp config appsettings set  --resource-group sushi-project-rg  --name ztu-sushi-frontend  --settings    WEBSITE_NODE_DEFAULT_VERSION="20-lts"    SCM_DO_BUILD_DURING_DEPLOYMENT="true"
+
 
 ## ✅ Як працює автоматизація (CI/CD)
 
