@@ -69,11 +69,9 @@ services:
 
 ## 🚀 Крок 3: Деплой Бекенду та БД (Azure Web App)
 
-### Варіант A: Локальний термінал (рекомендовано)
+### Варіант A: Локальний термінал (PowerShell/Git Bash)
 
-Якщо ви на Windows і використовуєте Git Bash або PowerShell:
-
-```bash
+```powershell
 # 1. Перейдіть у папку проекту
 cd "C:\University\Магістратура 1 курс\1 семестр\Docker\coursework\Project"
 
@@ -83,22 +81,22 @@ ls docker-compose.azure.yml
 # 3. Залогіньтесь в Azure (якщо ще не залогінені)
 az login
 
- az policy assignment list   --query "[].{Name:displayName, Params:parameters}"   -o json
- az group create --name sushi-project-rg --location polandcentral
- az appservice plan create --name sushi-plan --resource-group sushi-project-rg --sku B1 --is-linux --location polandcentral
-
-# 4. Створіть Web App (замініть ztu-sushi-backend на унікальне ім'я, якщо потрібно)
-az webapp create  --resource-group sushi-project-rg  --plan sushi-plan  --name ztu-sushi-backend  --multicontainer-config-type compose  --multicontainer-config-file docker-compose.azure.yml
+# 4. Створіть Web App для бекенду
+az webapp create `
+  --resource-group sushi-project-rg `
+  --plan sushi-plan `
+  --name ztu-sushi-backend `
+  --multicontainer-config-type compose `
+  --multicontainer-config-file docker-compose.azure.yml
 
 # 5. Увімкніть збереження даних БД
-az webapp config appsettings set  --resource-group sushi-project-rg  --name ztu-sushi-backend  --settings WEBSITES_ENABLE_APP_SERVICE_STORAGE=TRUE
+az webapp config appsettings set `
+  --resource-group sushi-project-rg `
+  --name ztu-sushi-backend `
+  --settings WEBSITES_ENABLE_APP_SERVICE_STORAGE=TRUE
 ```
 
----
-
 ### Варіант B: Azure Cloud Shell
-
-Якщо ви використовуєте https://shell.azure.com:
 
 ```bash
 # 1. Завантажте файл docker-compose.azure.yml
@@ -131,7 +129,11 @@ az webapp config appsettings set \
 
 ```bash
 # Виконайте цю команду в терміналі (локально або Cloud Shell)
-az ad sp create-for-rbac  --name "github-actions-sushi"  --role contributor --scopes /subscriptions/6cb6bef8-ca82-4fad-a987-01e8e74bb7e8/resourceGroups/sushi-project-rg  --sdk-auth
+az ad sp create-for-rbac \
+  --name "github-actions-sushi" \
+  --role contributor \
+  --scopes /subscriptions/6cb6bef8-ca82-4fad-a987-01e8e74bb7e8/resourceGroups/sushi-project-rg \
+  --sdk-auth
 ```
 
 **ЗБЕРЕЖІТЬ ВЕСЬ JSON-ВИВІД!** Він виглядає приблизно так:
@@ -161,7 +163,6 @@ az ad sp create-for-rbac  --name "github-actions-sushi"  --role contributor --sc
 Створіть файл `.github/workflows/deploy-backend.yml`:
 
 ```yaml
-# filepath: c:\University\Магістратура 1 курс\1 семестр\Docker\coursework\Project\.github\workflows\deploy-backend.yml
 name: Build and Deploy Backend
 
 on:
@@ -175,7 +176,7 @@ on:
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   IMAGE_NAME: sushi-api
-  AZURE_WEBAPP_NAME: ztu-sushi-backend  # <--- Вкажіть ваше ім'я Web App
+  AZURE_WEBAPP_NAME: ztu-sushi-backend
   AZURE_RESOURCE_GROUP: sushi-project-rg
 
 jobs:
@@ -212,13 +213,11 @@ jobs:
           az webapp restart --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
 ```
 
-**Збережіть і закомітьте цей файл у репозиторій!**
-
 ---
 
 ## 🌐 Крок 6: Деплой Фронтенду (Azure App Service)
 
-Оскільки Static Web Apps недоступні в `polandcentral`, ми використаємо **Azure App Service (Linux)** для фронтенду.
+Оскільки Static Web Apps недоступні в `polandcentral`, використовуємо **Azure App Service (Linux)**.
 
 ### 1. Оновіть `frontend/.env.production`
 
@@ -247,15 +246,7 @@ git push
 az login
 
 # 2. Створіть Web App для фронтенду (замініть ztu-sushi-frontend на унікальне ім'я, якщо потрібно)
-az webapp create \
-  --resource-group sushi-project-rg \
-  --plan sushi-plan \
-  --name ztu-sushi-frontend \
-  --runtime "NODE|14-lts" \
-  --deployment-source-url https://github.com/AlekseyOL2004/sushi_shop \
-  --deployment-source-branch frontend \
-  --deployment-source-repo-url https://github.com/AlekseyOL2004/sushi_shop.git \
-  --deployment-source-access-token ${{ secrets.GITHUB_TOKEN }}
+az webapp create  --resource-group sushi-project-rg  --plan sushi-plan --name ztu-sushi-frontend  --runtime "NODE|20-lts"  --deployment-source-url https://github.com/AlekseyOL2004/sushi_shop  --deployment-source-branch frontend  --deployment-source-repo-url https://github.com/AlekseyOL2004/sushi_shop.git  --deployment-source-access-token ${{ secrets.GITHUB_TOKEN }}
 ```
 
 #### Варіант B: Azure Cloud Shell
@@ -266,7 +257,7 @@ az webapp create \
   --resource-group sushi-project-rg \
   --plan sushi-plan \
   --name ztu-sushi-frontend \
-  --runtime "NODE|14-lts" \
+  --runtime "NODE|20-lts" \
   --deployment-source-url https://github.com/AlekseyOL2004/sushi_shop \
   --deployment-source-branch frontend \
   --deployment-source-repo-url https://github.com/AlekseyOL2004/sushi_shop.git \

@@ -34,13 +34,24 @@ jobs:
         env:
           VITE_API_BASE: https://ztu-sushi-backend.azurewebsites.net
 
-      - name: Prepare deployment package
+      - name: Create deployment package
         run: |
           cd frontend
-          mkdir -p deploy
-          cp -r dist deploy/
-          cp package.json deploy/
-          echo '{"scripts":{"start":"npx serve -s dist -l 8080"}}' > deploy/package.json
+          mkdir -p deploy/dist
+          cp -r dist/* deploy/dist/
+          cat > deploy/package.json << 'EOF'
+          {
+            "name": "sushi-frontend",
+            "version": "1.0.0",
+            "scripts": {
+              "start": "npx serve -s dist -l 8080"
+            },
+            "dependencies": {
+              "serve": "^14.2.0"
+            }
+          }
+          EOF
+          cd deploy && npm install --production
 
       - name: Login to Azure
         uses: azure/login@v2
