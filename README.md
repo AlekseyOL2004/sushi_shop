@@ -6,7 +6,7 @@
 ![React](https://img.shields.io/badge/React-18-blue)
 ![Vite](https://img.shields.io/badge/Vite-4.3.9-lightgrey)
 ![Docker](https://img.shields.io/badge/Docker-%20-blue)
-![Frontend Deploy](https://github.com/victorchei/ztu-docker-lr-4/actions/workflows/deploy-frontend-azure.yml/badge.svg?branch=frontend)
+![Frontend Deploy](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/deploy-frontend-azure.yml/badge.svg?branch=frontend)
 
 | Компонент | Мова / Фреймворк        | Основні бібліотеки / інструменти                                                 | Коротко                                                                                            |
 | --------- | ----------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
