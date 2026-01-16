@@ -175,12 +175,14 @@ GitHub Repository
 ![Deploy Frontend to Azure Web App](https://github.com/{your-username}/{your-repo}/actions/workflows/deploy-frontend-azure.yml/badge.svg?branch=frontend)
 ```
 
-> 💡 Замініть `{your-username}` та `{your-repo}` на ваші значення GitHub репозиторію.
+> 💡 Замініть `{your-username}` та `{your-repo}` на ваші значення. Для цього репозиторію використовуйте:
 
-**Приклад для вашого репозиторію:**
 ```markdown
-![Deploy Frontend to Azure Web App](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/deploy-frontend-azure.yml/badge.svg?branch=frontend)
+![Deploy Frontend to Azure Web App](https://github.com/AlekseyOL2004/sushi_shop/actions/workflows/deploy-frontend-azure.yml/badge.svg?branch=frontend)
 ```
+
+**Результат:**
+![Deploy Frontend to Azure Web App](https://github.com/AlekseyOL2004/sushi_shop/actions/workflows/deploy-frontend-azure.yml/badge.svg?branch=frontend)
 
 ### Спосіб 3: Email сповіщення
 
