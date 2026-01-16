@@ -2,7 +2,7 @@ name: Deploy Frontend to Azure App Service
 
 on:
   push:
-    branches: [ "main" ]  # <--- Залишити тільки main
+    branches: [ "main", "frontend" ]  # <--- Додано frontend
     paths:
       - 'frontend/**'
   workflow_dispatch:

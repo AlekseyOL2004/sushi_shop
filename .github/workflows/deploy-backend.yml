@@ -2,7 +2,7 @@ name: Build and Deploy Backend
 
 on:
   push:
-    branches: [ "main" ]  # <--- Залишити тільки main
+    branches: [ "main", "frontend" ]  # <--- Додано frontend
     paths:
       - 'api/**'
       - 'docker-compose.azure.yml'

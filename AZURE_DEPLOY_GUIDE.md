@@ -290,14 +290,35 @@ az webapp config set  --resource-group sushi-project-rg  --name ztu-sushi-fronte
 Після налаштування:
 
 1.  **Бекенд (API)**:
-    *   Змінюєте файли в папці `api/` → `git push`
+    *   Змінюєте файли в папці `api/` → `git push origin main`
     *   GitHub Action збирає Docker образ → пушить на Docker Hub
     *   Azure Web App перезапускається і підтягує новий образ
 
 2.  **Фронтенд**:
-    *   Змінюєте файли в папці `frontend/` → `git push`
-    *   GitHub Action (створений Azure) збирає React
-    *   Публікує на App Service
+    *   Змінюєте файли в папці `frontend/` → `git push origin main`
+    *   GitHub Action збирає React → створює `deploy/` з `dist/` + `package.json`
+    *   Завантажує на Azure App Service
+
+**⚠️ ВАЖЛИВО:** Workflow тригеряться **тільки з гілки `main`**!
+
+### Робочий процес (workflow):
+
+```bash
+# 1. Робите зміни в гілці frontend
+git checkout frontend
+# ... робите зміни ...
+git add .
+git commit -m "Update features"
+git push origin frontend
+
+# 2. Зливаєте зміни в main
+git checkout main
+git merge frontend
+git push origin main  # <--- ТУТ тригеряться workflow!
+
+# 3. Перевіряєте статус деплою
+# https://github.com/AlekseyOL2004/sushi_shop/actions
+```
 
 ---
 
