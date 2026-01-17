@@ -13,11 +13,29 @@ const app = express();
 // Middleware
 app.use(express.json());
 
-// CORS
+// CORS конфігурація для комунікації Frontend ↔ Backend
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
+  const allowedOrigins = [
+    'https://ztu-sushi-frontend.azurewebsites.net',
+    'http://ztu-sushi-frontend.azurewebsites.net',
+    'http://localhost:3000',
+    'http://localhost:3003'
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  
+  res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+  
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
   next();
 });
 

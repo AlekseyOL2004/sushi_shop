@@ -5,6 +5,7 @@ on:
     branches: [ "main", "frontend" ]
     paths:
       - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
   workflow_dispatch:
 
 env:
@@ -41,7 +42,7 @@ jobs:
           echo "✅ Using API URL: http://$API_FQDN:3001"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
         working-directory: frontend
 
       - name: Build application
@@ -54,17 +55,18 @@ jobs:
         run: |
           cd frontend
           
-          # Створити структуру деплою
+          # Створити чисту структуру деплою
+          rm -rf deploy
           mkdir -p deploy
-          cp -r dist deploy/
-          cp -r public deploy/ 2>/dev/null || true
           
-          # Створити package.json з правильним start скриптом
+          # Скопіювати dist
+          cp -r dist deploy/
+          
+          # Створити package.json
           cat > deploy/package.json << 'EOF'
           {
             "name": "sushi-frontend",
             "version": "1.0.0",
-            "description": "Sushi Shop Frontend",
             "main": "server.js",
             "scripts": {
               "start": "node server.js"
@@ -73,33 +75,41 @@ jobs:
               "express": "^4.18.2"
             },
             "engines": {
-              "node": ">=18.0.0"
+              "node": ">=20.0.0"
             }
           }
           EOF
           
-          # Створити server.js для Express
+          # Створити Express server
           cat > deploy/server.js << 'EOF'
           const express = require('express');
           const path = require('path');
           const app = express();
           const PORT = process.env.PORT || 8080;
 
-          // Serve static files
+          // Serve static files from dist
           app.use(express.static(path.join(__dirname, 'dist')));
 
-          // Handle SPA routing
+          // Handle SPA routing - всі маршрути повертають index.html
           app.get('*', (req, res) => {
             res.sendFile(path.join(__dirname, 'dist', 'index.html'));
           });
 
           app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Frontend server running on port ${PORT}`);
+            console.log(`✅ Frontend server running on port ${PORT}`);
+            console.log(`📂 Serving files from ${path.join(__dirname, 'dist')}`);
           });
           EOF
           
-          # Встановити Express
-          cd deploy && npm install --production
+          # Встановити залежності
+          cd deploy
+          npm install --production --no-optional
+          
+          # Створити .deployment файл для Oryx
+          cat > .deployment << 'EOF'
+          [config]
+          command = node server.js
+          EOF
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3

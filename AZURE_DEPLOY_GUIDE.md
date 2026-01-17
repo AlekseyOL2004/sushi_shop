@@ -682,3 +682,13 @@ az container create  --resource-group sushi-project-rg  --name sushi-api  --imag
 
 
 az container create  --resource-group sushi-project-rg  --name sushi-api  --image knm251oos/sushi-api:latest  --dns-name-label ztu-sushi-api  --ports 3001  --os-type Linux  --cpu 1  --memory 1  --location polandcentral  --environment-variables    PORT=3001    HOST=0.0.0.0    NODE_ENV=production    MONGO_URL='mongodb+srv://admin:SecurePassword123@cluster0.aepmndb.mongodb.net/sushi_shop?retryWrites=true&w=majority'
+
+
+# Налаштувати startup command
+az webapp config set  --resource-group sushi-project-rg  --name ztu-sushi-frontend  --startup-file "node server.js"
+
+# Налаштувати порт
+az webapp config appsettings set  --resource-group sushi-project-rg  --name ztu-sushi-frontend  --settings WEBSITES_PORT=8080
+
+# Перезапустити
+az webapp restart  --resource-group sushi-project-rg  --name ztu-sushi-frontend

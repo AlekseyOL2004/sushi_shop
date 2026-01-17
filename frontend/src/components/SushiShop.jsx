@@ -32,13 +32,13 @@ export default function SushiShop() {
       try {
         setLoading(true);
         const [menuRes, reviewsRes] = await Promise.all([
-          fetch(`${API_BASE}/menu?available=true`), // ВИПРАВЛЕННЯ: Додано фільтр available=true
+          fetch(`${API_BASE}/menu?available=true`),
           fetch(`${API_BASE}/reviews?limit=3&approved=true`),
         ]);
 
         if (menuRes.ok) {
           const menuData = await menuRes.json();
-          setMenuItems(menuData); // Тепер це будуть тільки доступні товари
+          setMenuItems(menuData);
         }
         if (reviewsRes.ok) setReviews(await reviewsRes.json());
       } catch (error) {
