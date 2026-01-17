@@ -384,66 +384,23 @@ curl -i http://localhost:3002/users   # dev
 
 ## 🌐 Live URLs
 
-| Компонент | URL | Статус |
-|-----------|-----|--------|
-| Frontend | https://ztu-sushi-frontend.azurewebsites.net | ![Status](https://img.shields.io/website?url=https://ztu-sushi-frontend.azurewebsites.net) |
-| Backend API | http://ztu-sushi-api.polandcentral.azurecontainer.io:3001 | ![Status](https://img.shields.io/website?url=http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/health) |
-| Health Check | http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/health | - |
-| MongoDB | MongoDB Atlas (Cloud) | ![Status](https://img.shields.io/badge/status-online-success) |
+| Компонент | URL | Статус | Примітка |
+|-----------|-----|--------|----------|
+| Frontend | https://ztu-sushi-frontend.azurewebsites.net | ![Status](https://img.shields.io/website?url=https://ztu-sushi-frontend.azurewebsites.net) | HTTPS ✅ |
+| API Proxy (Cloudflare) | https://sushi-api-proxy.YOUR_USERNAME.workers.dev | ![Status](https://img.shields.io/website?url=https://sushi-api-proxy.YOUR_USERNAME.workers.dev/health) | HTTPS Proxy ✅ |
+| Backend API (Direct) | http://ztu-sushi-api.polandcentral.azurecontainer.io:3001 | ![Status](https://img.shields.io/website?url=http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/health) | HTTP Only (через Cloudflare) |
+| MongoDB | MongoDB Atlas (Cloud) | ![Status](https://img.shields.io/badge/status-online-success) | HTTPS ✅ |
 
-## 🎉 Проект повністю задеплоєний!
+### ⚠️ Mixed Content рішення
 
-### Тестування
+**Проблема:** Azure App Service завжди використовує HTTPS, що блокує HTTP запити до API (Mixed Content).
 
-```bash
-# API endpoints
-curl http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/health
-curl http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/users
-curl http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/menu
-curl http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/categories
+**Рішення:** Cloudflare Worker як HTTPS proxy
+- Frontend робить запити на `https://sushi-api-proxy.YOUR_USERNAME.workers.dev` (HTTPS ✅)
+- Cloudflare Worker проксує запити на `http://ztu-sushi-api...` (HTTP)
+- **Безкоштовно, швидко, надійно!**
 
-# Frontend
-open https://ztu-sushi-frontend.azurewebsites.net
-```
-
-## 📊 Архітектура
-
-<details>
-<summary>Схема архітектури (натисніть, щоб розгорнути)</summary>
-
-![Архітектура додатку](./docs/architecture-diagram.png)
-
-</details>
-
----
-
-## 📦 Azure Resources
-
-| Ресурс | Тип | Локація |
-|--------|-----|---------|
-| `sushi-project-rg` | Resource Group | polandcentral |
-| `sushi-plan` | App Service Plan (B1) | polandcentral |
-| `sushi-api` | Container Instance | polandcentral |
-| `ztu-sushi-frontend` | App Service | polandcentral |
-| `Cluster0` | MongoDB Atlas | AWS eu-central-1 |
-
-## 📦 Docker образи проекту
-
-| Образ | Опис | Docker Hub |
-|-------|------|------------|
-| `knm251oos/sushi-api:latest` | Backend API (Node.js + Express + MongoDB Atlas) | [hub.docker.com/r/knm251oos/sushi-api](https://hub.docker.com/r/knm251oos/sushi-api) |
-
-### Як збілдити та запушити образ
-
-```powershell
-# Залогінитись в Docker Hub
-docker login
-
-# Збілдити API образ
-docker build -t knm251oos/sushi-api:latest ./api
-
-# Запушити образ
-docker push knm251oos/sushi-api:latest
-```
-
-**Перевірка:** Відкрийте https://hub.docker.com/r/knm251oos/sushi-api
+**Альтернативи для production:**
+- Azure Front Door ($$)
+- Azure Application Gateway ($$$)
+- Nginx reverse proxy з Let's Encrypt

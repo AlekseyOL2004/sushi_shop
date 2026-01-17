@@ -695,3 +695,5 @@ az webapp restart  --resource-group sushi-project-rg  --name ztu-sushi-frontend
 
 
 az webapp show  --resource-group sushi-project-rg  --name ztu-sushi-frontend  --query "{State:state, URL:defaultHostName}"
+
+az webapp update  --resource-group sushi-project-rg  --name ztu-sushi-frontend  --https-only false
