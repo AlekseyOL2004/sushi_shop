@@ -30,17 +30,6 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Get API URL
-        id: api-url
-        run: |
-          API_FQDN=$(az container show \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --name sushi-api \
-            --query ipAddress.fqdn \
-            --output tsv 2>/dev/null || echo "ztu-sushi-api.polandcentral.azurecontainer.io")
-          echo "api_url=http://$API_FQDN:3001" >> $GITHUB_OUTPUT
-          echo "✅ Using API URL: http://$API_FQDN:3001"
-
       - name: Install dependencies
         run: npm install --prefer-offline --no-audit
         working-directory: frontend
@@ -48,8 +37,6 @@ jobs:
       - name: Build application
         run: npm run build
         working-directory: frontend
-        env:
-          VITE_API_BASE: ${{ steps.api-url.outputs.api_url }}
 
       - name: Create deployment package
         run: |
@@ -126,4 +113,3 @@ jobs:
         run: |
           echo "✅ Frontend deployed successfully!"
           echo "🌐 Frontend URL: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
-          echo "🔗 API URL: ${{ steps.api-url.outputs.api_url }}"
