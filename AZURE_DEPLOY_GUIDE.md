@@ -692,3 +692,6 @@ az webapp config appsettings set  --resource-group sushi-project-rg  --name ztu-
 
 # Перезапустити
 az webapp restart  --resource-group sushi-project-rg  --name ztu-sushi-frontend
+
+
+az webapp show  --resource-group sushi-project-rg  --name ztu-sushi-frontend  --query "{State:state, URL:defaultHostName}"
