@@ -32,7 +32,7 @@ export default function SushiShop() {
       try {
         setLoading(true);
         const [menuRes, reviewsRes] = await Promise.all([
-          fetch(`${API_BASE}/menu?available=true`),
+          fetch(`${API_BASE}/menu?available=true&limit=6`),
           fetch(`${API_BASE}/reviews?limit=3&approved=true`),
         ]);
 
@@ -471,116 +471,145 @@ export default function SushiShop() {
               Завантаження...
             </div>
           ) : (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                gap: "2rem",
-              }}
-            >
-              {menuItems.map((item) => (
-                <div
-                  key={item._id}
-                  style={{
-                    background: "white",
-                    borderRadius: "15px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                    transition: "transform 0.3s",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => navigate(`/product/${item._id}`)}
-                  onMouseOver={(e) =>
-                    (e.currentTarget.style.transform = "scale(1.03)")
-                  }
-                  onMouseOut={(e) =>
-                    (e.currentTarget.style.transform = "scale(1)")
-                  }
-                >
+            <>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                  gap: "2rem",
+                }}
+              >
+                {menuItems.map((item) => (
                   <div
+                    key={item._id}
                     style={{
-                      height: "200px",
-                      textAlign: "center",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      background: "white",
+                      borderRadius: "15px",
+                      overflow: "hidden",
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                      transition: "transform 0.3s",
+                      cursor: "pointer",
                     }}
+                    onClick={() => navigate(`/product/${item._id}`)}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.transform = "scale(1.03)")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.transform = "scale(1)")
+                    }
                   >
-                    <img
-                      src={getImageUrl(item)}
-                      alt={item.name}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        borderRadius: "8px",
-                      }}
-                    />
-                  </div>
-                  <div style={{ padding: "1.5rem" }}>
-                    <h4
-                      style={{
-                        margin: "0 0 0.5rem",
-                        fontSize: "1.5rem",
-                        color: "#2d3748",
-                      }}
-                    >
-                      {item.name}
-                    </h4>
-                    <p
-                      style={{
-                        color: "#718096",
-                        fontSize: "0.9rem",
-                        marginBottom: "1rem",
-                      }}
-                    >
-                      {item.description}
-                    </p>
                     <div
                       style={{
+                        height: "200px",
+                        textAlign: "center",
                         display: "flex",
-                        justifyContent: "space-between",
                         alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      <span
+                      <img
+                        src={getImageUrl(item)}
+                        alt={item.name}
                         style={{
-                          fontSize: "1.8rem",
-                          fontWeight: "bold",
-                          color: "#667eea",
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                        }}
+                      />
+                    </div>
+                    <div style={{ padding: "1.5rem" }}>
+                      <h4
+                        style={{
+                          margin: "0 0 0.5rem",
+                          fontSize: "1.5rem",
+                          color: "#2d3748",
                         }}
                       >
-                        {item.price}₴
-                      </span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation(); // Запобігти спрацюванню onClick картки
-                          addToCart({
-                            id: item._id,
-                            _id: item._id,
-                            name: item.name,
-                            price: item.price,
-                            image: item.image,
-                            imageUrl: item.imageUrl,
-                          });
-                        }}
+                        {item.name}
+                      </h4>
+                      <p
                         style={{
-                          background: "#48bb78",
-                          color: "white",
-                          border: "none",
-                          padding: "0.7rem 1.5rem",
-                          borderRadius: "25px",
-                          cursor: "pointer",
-                          fontWeight: "bold",
+                          color: "#718096",
+                          fontSize: "0.9rem",
+                          marginBottom: "1rem",
                         }}
                       >
-                        Додати
-                      </button>
+                        {item.description}
+                      </p>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "1.8rem",
+                            fontWeight: "bold",
+                            color: "#667eea",
+                          }}
+                        >
+                          {item.price}₴
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Запобігти спрацюванню onClick картки
+                            addToCart({
+                              id: item._id,
+                              _id: item._id,
+                              name: item.name,
+                              price: item.price,
+                              image: item.image,
+                              imageUrl: item.imageUrl,
+                            });
+                          }}
+                          style={{
+                            background: "#48bb78",
+                            color: "white",
+                            border: "none",
+                            padding: "0.7rem 1.5rem",
+                            borderRadius: "25px",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Додати
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              <div style={{ textAlign: "center", marginTop: "3rem" }}>
+                <button
+                  onClick={() => navigate("/menu")}
+                  style={{
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    color: "white",
+                    border: "none",
+                    padding: "1rem 2.5rem",
+                    borderRadius: "50px",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
+                    transition: "all 0.3s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.transform = "translateY(-2px)";
+                    e.target.style.boxShadow = "0 6px 20px rgba(102, 126, 234, 0.5)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.transform = "translateY(0)";
+                    e.target.style.boxShadow = "0 4px 15px rgba(102, 126, 234, 0.4)";
+                  }}
+                >
+                  Дивитись все меню →
+                </button>
+              </div>
+            </>
           )}
         </div>
       </section>
