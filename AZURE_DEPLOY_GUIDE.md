@@ -359,16 +359,12 @@ az webapp show --name ztu-sushi-backend --resource-group sushi-project-rg --quer
 # Перевірте чи існує Docker образ
 # Відкрийте: https://hub.docker.com/r/knm251oos/sushi-api
 ```
-az webapp config container set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --multicontainer-config-type compose  --multicontainer-config-file docker-compose.azure.yml
 
-az webapp config appsettings set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --settings WEBSITES_ENABLE_APP_SERVICE_STORAGE=true
+Я не хочу використовувати поки Azure Cosmos DB зроби так щоб у мене бекенд запрацював, будь ласка 
 
-az webapp config container set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --multicontainer-config-type compose  --multicontainer-config-file docker-compose.azure.yml
+az webapp create  --resource-group sushi-project-rg  --plan sushi-plan  --name ztu-sushi-backend  --multicontainer-config-type compose  --multicontainer-config-file docker-compose.azure.yml
 
-
-az webapp config container set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --multicontainer-config-type compose  --multicontainer-config-file docker-compose.azure.yml
-
-az webapp log tail  --resource-group sushi-project-rg  --name ztu-sushi-backend
+az webapp config appsettings set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --settings WEBSITES_PORT=80
 
 
 **Рішення:**

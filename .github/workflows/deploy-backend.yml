@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_USERNAME: knm251oos  # <--- ТИМЧАСОВО: hardcode для тестування
+  DOCKER_USERNAME: knm251oos
   IMAGE_NAME: sushi-api
   AZURE_WEBAPP_NAME: ztu-sushi-backend
   AZURE_RESOURCE_GROUP: sushi-project-rg
@@ -32,17 +32,30 @@ jobs:
         with:
           context: ./api
           push: true
-          tags: ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest  # <--- використовує env
+          tags: ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
 
   deploy-to-azure:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Update Web App container configuration
+        run: |
+          az webapp config container set \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --multicontainer-config-type compose \
+            --multicontainer-config-file docker-compose.azure.yml
+
       - name: Restart Azure Web App
         run: |
-          az webapp restart --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+          az webapp restart \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }}

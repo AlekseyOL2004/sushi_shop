@@ -6,14 +6,9 @@ services:
     image: mongo:latest
     container_name: api_db_azure
     restart: always
-    volumes:
-      # ${BAPP_STORAGE_HOME} - це змінна середовища Azure Web App
-      # ${WEBAPP_STORAGE_HOME} - це змінна середовища Azure Web App
-      # Вона вказує на спільне сховище файлівata:/data/db
-      - ${WEBAPP_STORAGE_HOME}/site/wwwroot/data:/data/db
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=SecurePassword123!
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: SecurePassword123
   # Backend API
   api:
     image: knm251oos/sushi-api:latest
@@ -24,9 +19,9 @@ services:
       # Ми мапимо 80 контейнера на 3001 додатку.
       - "80:3001"
     environment:
-      - PORT=3001
-      - HOST=0.0.0.0
+      PORT: "3001"
+      HOST: "0.0.0.0"
       # Використовуємо ім'я сервісу 'api_db' для підключення
-      - MONGO_URL=mongodb://admin:SecurePassword123!@api_db:27017/sushi_shop?authSource=admin
+      MONGO_URL: "mongodb://admin:SecurePassword123@api_db:27017/sushi_shop?authSource=admin"
     depends_on:
       - api_db
