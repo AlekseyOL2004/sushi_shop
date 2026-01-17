@@ -17,7 +17,7 @@ services:
   # Backend API
   api:
     # !!! ЗАМІНІТЬ НА ВАШОГО КОРИСТУВАЧА DOCKER HUB !!!
-    image: AlekseyOL2004/sushi-api:latest
+    image: knm251oos/sushi-api:latest
     container_name: api_azure
     restart: always
     ports:

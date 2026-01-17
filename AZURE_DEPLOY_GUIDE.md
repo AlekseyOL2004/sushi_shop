@@ -347,27 +347,42 @@ git push origin main  # <--- ТУТ тригеряться workflow!
 
 **Діагностика:**
 ```bash
-# Подивіться логи
+# Подивіться логи (правильна команда!)
 az webapp log tail --name ztu-sushi-backend --resource-group sushi-project-rg
 
+# Перевірте app settings
+az webapp config appsettings list --name ztu-sushi-backend --resource-group sushi-project-rg
+
+# Перевірте статус Web App
+az webapp show --name ztu-sushi-backend --resource-group sushi-project-rg --query state
+
 # Перевірте чи існує Docker образ
-# Відкрийте: https://hub.docker.com/r/alekseyol2004/sushi-api
+# Відкрийте: https://hub.docker.com/r/knm251oos/sushi-api
 ```
 
 **Рішення:**
 ```powershell
-# 1. Зберіть образ локально
-cd api
-docker build -t alekseyol2004/sushi-api:latest .
+# 1. Переконайтесь що Docker образ існує
+start https://hub.docker.com/r/knm251oos/sushi-api
 
-# 2. Залогіньтесь в Docker Hub
-docker login
+# 2. Оновіть Docker Compose конфігурацію
+az webapp config container set `
+  --name ztu-sushi-backend `
+  --resource-group sushi-project-rg `
+  --multicontainer-config-type compose `
+  --multicontainer-config-file docker-compose.azure.yml
 
-# 3. Запуште образ
-docker push alekseyol2004/sushi-api:latest
+# 3. Увімкніть збереження даних
+az webapp config appsettings set `
+  --name ztu-sushi-backend `
+  --resource-group sushi-project-rg `
+  --settings WEBSITES_ENABLE_APP_SERVICE_STORAGE=true
 
 # 4. Перезапустіть Web App
 az webapp restart --name ztu-sushi-backend --resource-group sushi-project-rg
+
+# 5. Дочекайтесь 2-3 хвилини і перевірте логи
+az webapp log tail --name ztu-sushi-backend --resource-group sushi-project-rg
 ```
 
 ### Frontend показує 404 (Not Found)
