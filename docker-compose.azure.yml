@@ -7,16 +7,15 @@ services:
     container_name: api_db_azure
     restart: always
     volumes:
+      # ${BAPP_STORAGE_HOME} - це змінна середовища Azure Web App
       # ${WEBAPP_STORAGE_HOME} - це змінна середовища Azure Web App
-      # Вона вказує на спільне сховище файлів
+      # Вона вказує на спільне сховище файлівata:/data/db
       - ${WEBAPP_STORAGE_HOME}/site/wwwroot/data:/data/db
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=SecurePassword123!
-
   # Backend API
   api:
-    # !!! ЗАМІНІТЬ НА ВАШОГО КОРИСТУВАЧА DOCKER HUB !!!
     image: knm251oos/sushi-api:latest
     container_name: api_azure
     restart: always

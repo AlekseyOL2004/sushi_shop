@@ -37,7 +37,7 @@ router.post("/", async (req, res) => {
       // Округлення до 2 знаків після коми
       bonusPointsEarned = Math.floor((totalPrice / 100) * 100) / 100; //  200) * 100) / 100;
     }
-// Test 12
+// Test 13
     const order = new Order({
       items,
       totalPrice,
