@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Login to Azure (to get API URL)
+      - name: Login to Azure
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -38,7 +38,7 @@ jobs:
             --query ipAddress.fqdn \
             --output tsv 2>/dev/null || echo "ztu-sushi-api.polandcentral.azurecontainer.io")
           echo "api_url=http://$API_FQDN:3001" >> $GITHUB_OUTPUT
-          echo "Using API URL: http://$API_FQDN:3001"
+          echo "✅ Using API URL: http://$API_FQDN:3001"
 
       - name: Install dependencies
         run: npm install
@@ -53,20 +53,52 @@ jobs:
       - name: Create deployment package
         run: |
           cd frontend
-          mkdir -p deploy/dist
-          cp -r dist/* deploy/dist/
+          
+          # Створити структуру деплою
+          mkdir -p deploy
+          cp -r dist deploy/
+          cp -r public deploy/ 2>/dev/null || true
+          
+          # Створити package.json з правильним start скриптом
           cat > deploy/package.json << 'EOF'
           {
             "name": "sushi-frontend",
             "version": "1.0.0",
+            "description": "Sushi Shop Frontend",
+            "main": "server.js",
             "scripts": {
-              "start": "npx serve -s dist -l 8080"
+              "start": "node server.js"
             },
             "dependencies": {
-              "serve": "^14.2.0"
+              "express": "^4.18.2"
+            },
+            "engines": {
+              "node": ">=18.0.0"
             }
           }
           EOF
+          
+          # Створити server.js для Express
+          cat > deploy/server.js << 'EOF'
+          const express = require('express');
+          const path = require('path');
+          const app = express();
+          const PORT = process.env.PORT || 8080;
+
+          // Serve static files
+          app.use(express.static(path.join(__dirname, 'dist')));
+
+          // Handle SPA routing
+          app.get('*', (req, res) => {
+            res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+          });
+
+          app.listen(PORT, '0.0.0.0', () => {
+            console.log(`Frontend server running on port ${PORT}`);
+          });
+          EOF
+          
+          # Встановити Express
           cd deploy && npm install --production
 
       - name: Deploy to Azure Web App

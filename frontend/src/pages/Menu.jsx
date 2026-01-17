@@ -34,38 +34,20 @@ export default function Menu() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      console.log('API_BASE:', API_BASE);
-      console.log('Fetching menu from:', `${API_BASE}/menu?available=true`);
-      console.log('Fetching categories from:', `${API_BASE}/categories?active=true`);
       
       const [menuRes, categoriesRes] = await Promise.all([
-        fetch(`${API_BASE}/menu?available=true`), // ВИПРАВЛЕННЯ: Додано фільтр
+        fetch(`${API_BASE}/menu?available=true`),
         fetch(`${API_BASE}/categories?active=true`),
       ]);
 
-      console.log('Menu response status:', menuRes.status);
-      console.log('Categories response status:', categoriesRes.status);
-
       if (menuRes.ok) {
         const menuData = await menuRes.json();
-        console.log('Raw menu data:', menuData);
-        console.log('Menu data length:', menuData.length);
-        
-        setMenuItems(menuData); // Тепер вже відфільтровано на backend
-      } else {
-        const errorText = await menuRes.text();
-        console.error('Menu fetch failed. Status:', menuRes.status);
-        console.error('Error response:', errorText);
+        setMenuItems(menuData);
       }
 
       if (categoriesRes.ok) {
         const categoriesData = await categoriesRes.json();
-        console.log('Categories data:', categoriesData);
         setCategories(categoriesData);
-      } else {
-        const errorText = await categoriesRes.text();
-        console.error('Categories fetch failed. Status:', categoriesRes.status);
-        console.error('Error response:', errorText);
       }
     } catch (error) {
       console.error("Fetch error:", error);
