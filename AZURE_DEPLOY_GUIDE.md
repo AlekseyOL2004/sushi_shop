@@ -33,41 +33,118 @@
 
 ---
 
-## ⚙️ Крок 2: Налаштування Docker Compose для Azure
+## 🔧 Крок 2: Підготовка Azure
 
-1.  Відкрийте файл `docker-compose.azure.yml` у корені проекту.
-2.  **ВАЖЛИВО:** Замініть `YOUR_DOCKER_USER` на ваш реальний логін Docker Hub!
+### 2.1 Встановити Azure CLI (якщо ще не встановлений)
 
-```yaml
-version: '3.8'
-services:
-  api_db:
-    image: mongo:latest
-    restart: always
-    volumes:
-      - ${WEBAPP_STORAGE_HOME}/site/wwwroot/data:/data/db
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=SecurePassword123!
+Інструкції: https://docs.microsoft.com/uk-ua/cli/azure/install-azure-cli
 
-  api:
-    image: AlekseyOL2004/sushi-api:latest  # <--- ВАШ ЛОГІН DOCKER HUB
-    restart: always
-    ports:
-      - "80:3001"
-    environment:
-      - PORT=3001
-      - HOST=0.0.0.0
-      - MONGO_URL=mongodb://admin:SecurePassword123!@api_db:27017/sushi_shop?authSource=admin
-    depends_on:
-      - api_db
+### 2.2 Увійти в Azure
+
+```powershell
+az login
 ```
 
-**Збережіть файл!**
+### 2.2.1 Зареєструвати необхідні провайдери (ВАЖЛИВО!)
+
+Перед створенням ресурсів потрібно зареєструвати провайдери Azure:
+
+```powershell
+# Зареєструвати провайдери
+az provider register --namespace Microsoft.ContainerInstance
+az provider register --namespace Microsoft.Web
+az provider register --namespace Microsoft.Network
+az provider register --namespace Microsoft.Storage
+
+# Дочекатись завершення реєстрації (2-5 хвилин)
+az provider show --namespace Microsoft.ContainerInstance --query "registrationState"
+```
+
+Дочекайтесь поки статус зміниться на `"Registered"` перед продовженням!
+
+**Перевірка всіх провайдерів:**
+
+```powershell
+az provider list --query "[?namespace=='Microsoft.ContainerInstance' || namespace=='Microsoft.Web' || namespace=='Microsoft.Network'].{Provider:namespace, Status:registrationState}" --output table
+```
+
+Всі мають бути `Registered`.
+
+### 2.3 Створити Resource Group
+
+```powershell
+az group create --name sushi-project-rg --location "Central US"
+```
+
+### 2.4 Створити App Service Plan
+
+```powershell
+az appservice plan create --name sushi-plan --resource-group sushi-project-rg --sku B1 --is-linux
+```
 
 ---
 
-## 🚀 Крок 3: Деплой Бекенду та БД (Azure Web App)
+## 📂 Крок 3: Підготувати файли проекту
+
+### 3.1 Створити Dockerfile для MongoDB
+
+Створіть папку `mongodb` та файл `Dockerfile`:
+
+```bash
+mkdir mongodb
+```
+
+#### mongodb/Dockerfile
+
+```dockerfile
+FROM mongo:latest
+
+ENV MONGO_INITDB_ROOT_USERNAME=admin
+ENV MONGO_INITDB_ROOT_PASSWORD=SecurePassword123
+
+EXPOSE 27017
+
+CMD ["mongod", "--bind_ip_all"]
+```
+
+### 3.2 Збілдити та запушити Docker образи
+
+**⚠️ ВАЖЛИВО:** Перед створенням Azure контейнерів потрібно запушити образи на Docker Hub!
+
+```powershell
+# Перейти в папку проекту
+cd "C:\University\Магістратура 1 курс\1 семестр\Docker\coursework\Project"
+
+# Залогінитись в Docker Hub
+docker logout
+docker login
+# Username: knm251oos
+# Password: (ваш пароль або Access Token)
+
+# Збілдити MongoDB образ
+docker build -t knm251oos/sushi-mongodb:latest ./mongodb
+
+# Запушити MongoDB образ
+docker push knm251oos/sushi-mongodb:latest
+
+# Збілдити API образ
+docker build -t knm251oos/sushi-api:latest ./api
+
+# Запушити API образ
+docker push knm251oos/sushi-api:latest
+```
+
+**Перевірка:** Відкрийте https://hub.docker.com/u/knm251oos і переконайтесь що обидва образи з'явились.
+
+**Якщо помилка "push access denied":**
+
+1. Створіть Access Token: https://hub.docker.com/settings/security
+2. Залогіньтесь з токеном: `docker login -u knm251oos` (пароль = токен)
+3. Повторіть push
+
+---
+
+## 🏗️ Крок 4: Деплой Бекенду та БД (Azure Web App)
 
 ### Варіант A: Локальний термінал (PowerShell)
 
@@ -122,7 +199,7 @@ az webapp config appsettings set \
 
 ---
 
-## 🔐 Крок 4: Створення Service Principal для GitHub Actions
+## 🔐 Крок 5: Створення Service Principal для GitHub Actions
 
 Цей крок дозволяє GitHub автоматично деплоїти зміни.
 
@@ -157,133 +234,181 @@ az ad sp create-for-rbac \
 
 ---
 
-## 📝 Крок 5: Створення Workflow для автоматичного деплою бекенду
+## 📝 Крок 6: Оновити AZURE_DEPLOY_GUIDE.md
 
-**ВАЖЛИВО:** Переконайтесь що у вас є тільки **один** workflow файл для кожного компонента!
-
-### Структура workflow файлів
-
-```
-.
-└── .github
-    └── workflows
-        ├── deploy-backend.yml
-        └── deploy-frontend.yml
-```
-
-### Приклад вмісту `deploy-backend.yml`
-
-```yaml
-name: Build and Deploy Backend
-
-on:
-  push:
-    branches: [ "main", "master", "api" ]
-    paths:
-      - 'api/**'
-      - 'docker-compose.azure.yml'
-  workflow_dispatch:
-
-env:
-  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  IMAGE_NAME: sushi-api
-  AZURE_WEBAPP_NAME: ztu-sushi-backend
-  AZURE_RESOURCE_GROUP: sushi-project-rg
-
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./api
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-
-  deploy-to-azure:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Restart Azure Web App
-        run: |
-          az webapp restart --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
-```
+### AZURE_DEPLOY_GUIDE.md
 
 ---
 
-## 🌐 Крок 6: Деплой Фронтенду (Azure App Service)
+## ✅ Крок 7: Створити API контейнер з MongoDB Atlas
 
-Оскільки Static Web Apps недоступні в `polandcentral`, використовуємо **Azure App Service (Linux)**.
+**✅ ВИКОНАНО!** API контейнер запущений та підключений до MongoDB Atlas.
 
-### 1. Оновіть `frontend/.env.production`
+### Перевірка
 
-```
-VITE_API_BASE=https://ztu-sushi-backend.azurewebsites.net
-```
+```powershell
+# Health check
+curl http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/health
 
-*(Замініть `ztu-sushi-backend` на ваше ім'я Web App з Кроку 3)*
+# Очікуваний результат
+# {"status":"OK","mongodb":"Connected","timestamp":"..."}
 
-### 2. Закомітьте зміни
-
-```bash
-git add frontend/.env.production docker-compose.azure.yml .github/workflows/deploy-backend.yml
-git commit -m "Configure Azure deployment"
-git push
+# Переглянути логи
+az container logs --resource-group sushi-project-rg --name sushi-api
 ```
 
-### 3. Створіть App Service для фронтенду
+### Деталі деплою
 
-Ми вже створили бекенд в App Service, тому просто повторимо ці кроки для фронтенду.
-
-#### Варіант A: Локальний термінал (рекомендовано)
-
-```bash
-# 1. Увійдіть в Azure (якщо ще не залогінені)
-az login
-
-# 2. Створіть Web App для фронтенду (замініть ztu-sushi-frontend на унікальне ім'я, якщо потрібно)
-az webapp create  --resource-group sushi-project-rg  --plan sushi-plan --name ztu-sushi-frontend  --runtime "NODE:20-lts"  --deployment-source-url https://github.com/AlekseyOL2004/sushi_shop  --deployment-source-branch frontend  --deployment-source-repo-url https://github.com/AlekseyOL2004/sushi_shop.git  --deployment-source-access-token
-
-az webapp create --resource-group sushi-project-rg  --plan sushi-plan  --name ztu-sushi-frontend  --runtime "NODE:20-lts"
-```
-
-#### Варіант B: Azure Cloud Shell
-
-```bash
-# 1. Створіть Web App для фронтенду
-az webapp create \
-  --resource-group sushi-project-rg \
-  --plan sushi-plan \
-  --name ztu-sushi-frontend \
-  --runtime "NODE|20-lts" \
-  --deployment-source-url https://github.com/AlekseyOL2004/sushi_shop \
-  --deployment-source-branch frontend \
-  --deployment-source-repo-url https://github.com/AlekseyOL2004/sushi_shop.git \
-  --deployment-source-access-token
-```
+| Параметр | Значення |
+|----------|----------|
+| **Container Name** | `sushi-api` |
+| **Image** | `knm251oos/sushi-api:latest` |
+| **FQDN** | `ztu-sushi-api.polandcentral.azurecontainer.io` |
+| **Public IP** | `134.112.8.175` |
+| **Port** | `3001` |
+| **MongoDB** | MongoDB Atlas (Cloud) |
+| **CPU** | 1 core |
+| **Memory** | 1 GB |
 
 ---
 
+## ⚠️ Важливе обмеження Azure Container Instances
 
-az webapp config set  --resource-group sushi-project-rg  --name ztu-sushi-frontend  --startup-file "npx serve -s dist -l 8080"
+**Не можна використовувати VNet разом з публічним IP адресою!**
 
-  az webapp config appsettings set  --resource-group sushi-project-rg  --name ztu-sushi-frontend  --settings    WEBSITE_NODE_DEFAULT_VERSION="20-lts"    SCM_DO_BUILD_DURING_DEPLOYMENT="true"
+Ми використовуємо **Варіант A: Без VNet** (простіше, для навчання).
 
+## ✅ Деплой MongoDB та API (БЕЗ VNet)
+
+### Крок 1: Створити MongoDB
+
+```powershell
+az container create `
+  --resource-group sushi-project-rg `
+  --name sushi-mongodb `
+  --image knm251oos/sushi-mongodb:latest `
+  --ip-address Public `
+  --ports 27017 `
+  --os-type Linux `
+  --environment-variables `
+    MONGO_INITDB_ROOT_USERNAME=admin `
+    MONGO_INITDB_ROOT_PASSWORD=SecurePassword123 `
+  --cpu 1 `
+  --memory 1.5 `
+  --location polandcentral
+```
+
+**⚠️ ВАЖЛИВО:** MongoDB буде доступна через публічний IP. Для production рекомендується використовувати VNet + Application Gateway.
+
+### Крок 2: Отримати IP MongoDB
+
+```powershell
+$MONGO_IP = az container show `
+  --resource-group sushi-project-rg `
+  --name sushi-mongodb `
+  --query ipAddress.ip `
+  --output tsv
+
+echo "MongoDB IP: $MONGO_IP"
+```
+
+### Крок 3: Створити API
+
+```powershell
+az container create `
+  --resource-group sushi-project-rg `
+  --name sushi-api `
+  --image knm251oos/sushi-api:latest `
+  --dns-name-label ztu-sushi-api `
+  --ports 3001 `
+  --os-type Linux `
+  --environment-variables `
+    PORT=3001 `
+    HOST=0.0.0.0 `
+    "MONGO_URL=mongodb://admin:SecurePassword123@$MONGO_IP:27017/sushi_shop?authSource=admin" `
+  --cpu 1 `
+  --memory 1 `
+  --location polandcentral
+```
+
+### Крок 4: Перевірити деплой
+
+```powershell
+# Отримати FQDN API
+az container show `
+  --resource-group sushi-project-rg `
+  --name sushi-api `
+  --query ipAddress.fqdn `
+  --output tsv
+
+# Перевірити health
+curl http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/health
+
+# Переглянути логи
+az container logs `
+  --resource-group sushi-project-rg `
+  --name sushi-api
+```
+
+### Крок 5: Оновити frontend/.env.production
+
+```env
+VITE_API_BASE=http://ztu-sushi-api.polandcentral.azurecontainer.io:3001
+```
+
+## 📊 Архітектура рішення
+
+---
+
+## 🔄 Автоматичний деплой (CI/CD)
+
+### Тригери workflows
+
+1. **Backend + MongoDB** (`.github/workflows/deploy-backend.yml`):
+   - Тригериться при push в гілки `main` або `frontend`
+   - Якщо змінилися файли в `api/**` або `mongodb/**`
+   - Білдить обидва Docker образи (API та MongoDB)
+   - Деплоїть в Azure Container Instances
+
+2. **Frontend** (`.github/workflows/deploy-frontend.yml`):
+   - Тригериться при push в гілки `main` або `frontend`
+   - Якщо змінилися файли в `frontend/**`
+   - Автоматично отримує URL API з Azure
+   - Білдить React додаток з правильним `VITE_API_BASE`
+   - Деплоїть на Azure App Service
+
+### Приклад робочого процесу
+
+```bash
+# 1. Зробити зміни в гілці frontend
+git checkout frontend
+
+# 2. Змінити файли (наприклад, frontend/src або api/src)
+# Змінити і frontend, і backend одночасно — все оновиться!
+
+git add .
+git commit -m "Update frontend and backend"
+git push origin frontend
+
+# 3. GitHub Actions автоматично:
+#    ✅ Зібере MongoDB образ → push на Docker Hub
+#    ✅ Зібере API образ → push на Docker Hub
+#    ✅ Оновить MongoDB в Azure Container Instances
+#    ✅ Оновить API в Azure Container Instances
+#    ✅ Зібере Frontend з актуальним API URL
+#    ✅ Задеплоїть Frontенд на Azure App Service
+
+# 4. Перевірити статус:
+# https://github.com/AlekseyOL2004/sushi_shop/actions
+```
+
+### Переваги цього підходу
+
+- ✅ **Один push** — оновлює все (MongoDB, API, Frontend)
+- ✅ **Автоматичне отримання API URL** для frontend
+- ✅ **Ізольовані контейнери** в Azure Container Instances
+- ✅ **Приватна мережа** (VNet) для MongoDB та API
+- ✅ **Публічний доступ** тільки до API (через FQDN)
 
 ## ✅ Як працює автоматизація (CI/CD)
 
@@ -364,13 +489,24 @@ az webapp show --name ztu-sushi-backend --resource-group sushi-project-rg --quer
 
 az webapp create  --resource-group sushi-project-rg  --plan sushi-plan  --name ztu-sushi-backend  --multicontainer-config-type compose  --multicontainer-config-file docker-compose.azure.yml
 
-az webapp config appsettings set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --settings WEBSITES_PORT=80
+az webapp config.appsettings set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --settings WEBSITES_PORT=80
 
-az webapp config container set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --multicontainer-config-type compose  --multicontainer-config-file docker-compose.azure.yml
+az webapp config.container set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --multicontainer-config-type compose  --multicontainer-config-file docker-compose.azure.yml
 
-az webapp config appsettings set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --settings WEBSITES_PORT=3001
+az webapp config.appsettings set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --settings WEBSITES_PORT=3001
+
+az network vnet create  --resource-group sushi-project-rg  --name sushi-vnet  --address-prefix 10.0.0.0/16  --subnet-name default  --subnet-prefix 10.0.0.0/24
 
 az webapp restart  --name ztu-sushi-backend  --resource-group sushi-project-rg
+
+az ad sp create-for-rbac  --name "github-actions-sushi"  --role contributor  --scopes /subscriptions/6cb6bef8-ca82-4fad-a987-01e8e74bb7e8/resourceGroups/sushi-project-rg  --sdk-auth
+
+az container create  --resource-group sushi-project-rg  --name sushi-mongodb  --image knm251oos/sushi-mongodb:latest  --vnet sushi-vnet  --subnet default  --ip-address Private  --ports 27017  --environment-variables    MONGO_INITDB_ROOT_USERNAME=admin    MONGO_INITDB_ROOT_PASSWORD=SecurePassword123  --cpu 1  --memory 1.5  --location polandcentral
+
+
+# Створити API БЕЗ VNet, але з публічним IP
+az container create  --resource-group sushi-project-rg  --name sushi-api  --image knm251oos/sushi-api:latest  --ip-address Public  --dns-name-label ztu-sushi-api  --ports 3001  --os-type Linux  --environment-variables    PORT=3001    HOST=0.0.0.0    "MONGO_URL=mongodb://admin:SecurePassword123@10.0.0.4:27017/sushi_shop?authSource=admin"  --cpu 1  --memory 1  --location polandcentral
+
 
 
 **Рішення:**
@@ -449,3 +585,100 @@ az webapp config appsettings set \
 ---
 
 **Успішного деплою! 🚀**
+
+
+az container create  --resource-group sushi-project-rg  --name sushi-mongodb  --image knm251oos/sushi-mongodb:latest  --vnet sushi-vnet  --subnet default  --ip-address Private  --ports 27017  --os-type Linux  --environment-variables    MONGO_INITDB_ROOT_USERNAME=admin    MONGO_INITDB_ROOT_PASSWORD=SecurePassword123  --cpu 1  --memory 1.5  --location polandcentral
+
+az container show  --resource-group sushi-project-rg  --name sushi-mongodb  --query instanceView.state
+
+az container logs  --resource-group sushi-project-rg  --name sushi-mongodb  --tail 50
+
+$MONGO_IP = az container show  --resource-group sushi-project-rg  --name sushi-mongodb  --query ipAddress.ip  --output tsv
+
+az container create  --resource-group sushi-project-rg  --name sushi-api  --image knm251oos/sushi-api:latest  --vnet sushi-vnet  --subnet default  --dns-name-label ztu-sushi-api  --ports 3001  --os-type Linux  --environment-variables    PORT=3001    HOST=0.0.0.0    "MONGO_URL=mongodb://admin:SecurePassword123@$MONGO_IP:27017/sushi_shop?authSource=admin"  --cpu 1  --memory 1  --location polandcentral
+
+
+az container create  --resource-group sushi-project-rg  --name sushi-api  --image knm251oos/sushi-api:latest  --vnet sushi-vnet  --subnet default  --ip-address Public  --ports 3001  --os-type Linux  --environment-variables    PORT=3001    HOST=0.0.0.0    "MONGO_URL=mongodb://admin:SecurePassword123@10.0.0.4:27017/sushi_shop?authSource=admin"  --cpu 1  --memory 1  --location polandcentral
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Для навчання рекомендуємо Варіант A.**MongoDB та API в приватній мережі, потрібен Application Gateway для доступу ззовні (не розглядається в цій інструкції).### Варіант B: З VNet (безпечніше, складніше)```  --location polandcentral  --memory 1 `  --cpu 1 `    "MONGO_URL=mongodb://admin:SecurePassword123@$MONGO_IP:27017/sushi_shop?authSource=admin" `    HOST=0.0.0.0 `    PORT=3001 `  --environment-variables `  --os-type Linux `  --ports 3001 `  --dns-name-label ztu-sushi-api `  --image knm251oos/sushi-api:latest `  --name sushi-api `  --resource-group sushi-project-rg `az container create `# 3. Створити API БЕЗ VNetecho "MongoDB IP: $MONGO_IP"  --output tsv  --query ipAddress.ip `  --name sushi-mongodb `  --resource-group sushi-project-rg `$MONGO_IP = az container show `# 2. Отримати IP MongoDB  --location polandcentral  --memory 1.5 `  --cpu 1 `    MONGO_INITDB_ROOT_PASSWORD=SecurePassword123 `    MONGO_INITDB_ROOT_USERNAME=admin `  --environment-variables `  --os-type Linux `  --ports 27017 `  --ip-address Public `  --image knm251oos/sushi-mongodb:latest `  --name sushi-mongodb `  --resource-group sushi-project-rg `az container create `# 1. Створити MongoDB БЕЗ VNet```powershellMongoDB та API в публічному інтернеті:### Варіант A: Без VNet (простіше, для навчання)Є два підходи:**Не можна використовувати VNet разом з публічним IP адресою!**## ⚠️ Важливе обмеження Azure Container Instances
+
+
+az container logs  --resource-group sushi-project-rg  --name sushi-api
+
+az container show  --resource-group sushi-project-rg  --name sushi-api  --query "{State:instanceView.state, RestartCount:containers[0].instanceView.restartCount, Events:instanceView.events}"  --output json
+
+az container delete  --resource-group sushi-project-rg  --name sushi-api  --yes
+
+$MONGO_IP = az container show  --resource-group sushi-project-rg  --name sushi-mongodb  --query ipAddress.ip  --output tsv
+
+az container create  --resource-group sushi-project-rg  --name sushi-api  --image knm251oos/sushi-api:latest  --dns-name-label ztu-sushi-api  --ports 3001  --os-type Linux  --environment-variables    PORT=3001    HOST=0.0.0.0    NODE_ENV=production    "MONGO_URL=mongodb://admin:SecurePassword123@$MONGO_IP:27017/sushi_shop?authSource=admin"  --cpu 1  --memory 1  --location polandcentral
+
+az container delete  --resource-group sushi-project-rg  --name sushi-api  --yes
+
+$MONGO_IP = az container show  --resource-group sushi-project-rg  --name sushi-mongodb  --query ipAddress.ip  --output tsv
+
+
+az container create  --resource-group sushi-project-rg  --name sushi-api  --image knm251oos/sushi-api:latest  --dns-name-label ztu-sushi-api  --ports 3001  --os-type Linux  --environment-variables    PORT=3001    HOST=0.0.0.0    NODE_ENV=production    'MONGO_URL=mongodb+srv://admin:SecurePassword123@cluster0.aepmndb.mongodb.net/sushi_shop?retryWrites=true&w=majority'  --cpu 1  --memory 1  --location polandcentral
+
+az container create  --resource-group sushi-project-rg  --name sushi-api  --image knm251oos/sushi-api:latest  --dns-name-label ztu-sushi-api  --ports 3001  --os-type Linux  --environment-variables    PORT=3001    HOST=0.0.0.0    NODE_ENV=production    "MONGO_URL=mongodb+srv://admin:SecurePassword123@cluster0.aepmndb.mongodb.net/sushi_shop?retryWrites=true&w=majority"  --cpu 1  --memory 1  --location polandcentral
+
+
+az container create  --resource-group sushi-project-rg  --name sushi-api  --image knm251oos/sushi-api:latest  --dns-name-label ztu-sushi-api  --ports 3001  --os-type Linux  --cpu 1  --memory 1  --location polandcentral  --environment-variables    PORT=3001    HOST=0.0.0.0    NODE_ENV=production    MONGO_URL='mongodb+srv://admin:SecurePassword123@cluster0.aepmndb.mongodb.net/sushi_shop?retryWrites=true&w=majority'

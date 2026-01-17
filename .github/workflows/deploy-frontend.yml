@@ -24,15 +24,31 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Login to Azure (to get API URL)
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get API URL
+        id: api-url
+        run: |
+          API_FQDN=$(az container show \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name sushi-api \
+            --query ipAddress.fqdn \
+            --output tsv 2>/dev/null || echo "ztu-sushi-api.polandcentral.azurecontainer.io")
+          echo "api_url=http://$API_FQDN:3001" >> $GITHUB_OUTPUT
+          echo "Using API URL: http://$API_FQDN:3001"
+
       - name: Install dependencies
-        run: npm install  # <--- Змінено: npm install замість npm cistall  # <--- Змінено з npm ci на npm install
+        run: npm install
         working-directory: frontend
 
       - name: Build application
         run: npm run build
         working-directory: frontend
         env:
-          VITE_API_BASE: https://ztu-sushi-backend.azurewebsites.net
+          VITE_API_BASE: ${{ steps.api-url.outputs.api_url }}
 
       - name: Create deployment package
         run: |
@@ -53,13 +69,14 @@ jobs:
           EOF
           cd deploy && npm install --production
 
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           package: frontend/deploy
+
+      - name: Display deployment info
+        run: |
+          echo "✅ Frontend deployed successfully!"
+          echo "🌐 Frontend URL: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
+          echo "🔗 API URL: ${{ steps.api-url.outputs.api_url }}"

@@ -35,9 +35,9 @@ router.post("/", async (req, res) => {
     let bonusPointsEarned = 0;
     if (userId) {
       // Округлення до 2 знаків після коми
-      bonusPointsEarned = Math.floor((totalPrice / 100) * 100) / 100; //  200) * 100) / 100;
+      bonusPointsEarned = Math.floor((totalPrice / 100) * 100) / 100;
     }
-// Test 14
+
     const order = new Order({
       items,
       totalPrice,

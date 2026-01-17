@@ -6,13 +6,8 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "dev:local": "NODE_ENV=development nodemon src/app.local.js",
-    "prod:local": "NODE_ENV=production node src/app.local.js",
-    "create:admin": "node src/createAdmin.js",
-    "update:users": "node src/updateExistingUsers.js",
-    "fix:users": "node src/fixUsers.js",
-    "seed": "node src/seedData.js",
-    "seed:categories": "node src/seedCategories.js"
+    "dev:local": "nodemon src/app.local.js",
+    "prod:local": "NODE_ENV=production node src/app.local.js"
   },
   "keywords": [],
   "author": "",

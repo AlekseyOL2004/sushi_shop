@@ -381,3 +381,69 @@ curl -i http://localhost:3002/users   # dev
 - [Azure Static Web Apps](https://docs.microsoft.com/azure/static-web-apps/) - [Azure Static Web Apps](https://docs.microsoft.com/azure/static-web-apps/)
 - [Azure App Service](https://docs.microsoft.com/azure/app-service/) - [Azure App Service](https://docs.microsoft.com/azure/app-service/)
 - [Azure Cosmos DB](https://docs.microsoft.com/azure/cosmos-db/) - [Azure Cosmos DB](https://docs.microsoft.com/azure/cosmos-db/)
+
+## 🌐 Live URLs
+
+| Компонент | URL | Статус |
+|-----------|-----|--------|
+| Frontend | https://ztu-sushi-frontend.azurewebsites.net | ![Status](https://img.shields.io/website?url=https://ztu-sushi-frontend.azurewebsites.net) |
+| Backend API | http://ztu-sushi-api.polandcentral.azurecontainer.io:3001 | ![Status](https://img.shields.io/website?url=http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/health) |
+| Health Check | http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/health | - |
+| MongoDB | MongoDB Atlas (Cloud) | ![Status](https://img.shields.io/badge/status-online-success) |
+
+## 🎉 Проект повністю задеплоєний!
+
+### Тестування
+
+```bash
+# API endpoints
+curl http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/health
+curl http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/users
+curl http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/menu
+curl http://ztu-sushi-api.polandcentral.azurecontainer.io:3001/categories
+
+# Frontend
+open https://ztu-sushi-frontend.azurewebsites.net
+```
+
+## 📊 Архітектура
+
+<details>
+<summary>Схема архітектури (натисніть, щоб розгорнути)</summary>
+
+![Архітектура додатку](./docs/architecture-diagram.png)
+
+</details>
+
+---
+
+## 📦 Azure Resources
+
+| Ресурс | Тип | Локація |
+|--------|-----|---------|
+| `sushi-project-rg` | Resource Group | polandcentral |
+| `sushi-plan` | App Service Plan (B1) | polandcentral |
+| `sushi-api` | Container Instance | polandcentral |
+| `ztu-sushi-frontend` | App Service | polandcentral |
+| `Cluster0` | MongoDB Atlas | AWS eu-central-1 |
+
+## 📦 Docker образи проекту
+
+| Образ | Опис | Docker Hub |
+|-------|------|------------|
+| `knm251oos/sushi-api:latest` | Backend API (Node.js + Express + MongoDB Atlas) | [hub.docker.com/r/knm251oos/sushi-api](https://hub.docker.com/r/knm251oos/sushi-api) |
+
+### Як збілдити та запушити образ
+
+```powershell
+# Залогінитись в Docker Hub
+docker login
+
+# Збілдити API образ
+docker build -t knm251oos/sushi-api:latest ./api
+
+# Запушити образ
+docker push knm251oos/sushi-api:latest
+```
+
+**Перевірка:** Відкрийте https://hub.docker.com/r/knm251oos/sushi-api

@@ -28,11 +28,10 @@ services:
     environment:
       - PORT=3001
       - HOST=0.0.0.0
-      - MONGO_URL=mongodb://api_db:27017/api
+      # Використовуємо MongoDB Atlas замість локального контейнера
+      - MONGO_URL=${MONGO_URL:-mongodb+srv://admin:SecurePassword123@cluster0.aepmndb.mongodb.net/sushi_shop?retryWrites=true&w=majority}
     volumes:
       - ./api/uploads:/usr/src/app/uploads
-    depends_on:
-      - api_db
 
   frontend:
     container_name: frontend_prod
@@ -47,12 +46,5 @@ services:
     # Проста команда, щоб контейнер не падав відразу (або можна використовувати для build)
     command: sh -c "cp -r /usr/src/app/dist/* /usr/src/app/dist/ && echo 'Files copied'"
 
-  api_db:
-    container_name: api_db_prod
-    image: mongo:latest
-    volumes:
-      - mongodb_api:/data/db
-
 volumes:
-  mongodb_api:
   frontend_build: # Спільний том для передачі файлів від React до Nginx

@@ -1,18 +1,18 @@
-name: Build and Deploy Backend
+name: Build and Deploy Backend (MongoDB Atlas)
 
 on:
   push:
     branches: [ "main", "frontend" ]
     paths:
       - 'api/**'
-      - 'docker-compose.azure.yml'
+      - '.github/workflows/deploy-backend.yml'
   workflow_dispatch:
 
 env:
   DOCKER_USERNAME: knm251oos
-  IMAGE_NAME: sushi-api
-  AZURE_WEBAPP_NAME: ztu-sushi-backend
+  API_IMAGE: sushi-api
   AZURE_RESOURCE_GROUP: sushi-project-rg
+  AZURE_LOCATION: polandcentral
 
 jobs:
   build-and-push:
@@ -27,42 +27,54 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
+      - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
           context: ./api
           push: true
-          tags: ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.DOCKER_USERNAME }}/${{ env.API_IMAGE }}:latest
 
-  deploy-to-azure:
+  deploy-api:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Login to Azure
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Update Web App container configuration
+      - name: Delete existing API container
         run: |
-          az webapp config container set \
-            --name ${{ env.AZURE_WEBAPP_NAME }} \
+          az container delete \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --multicontainer-config-type compose \
-            --multicontainer-config-file docker-compose.azure.yml
+            --name sushi-api \
+            --yes || echo "API container doesn't exist"
 
-      - name: Configure port settings
+      - name: Create API Container with MongoDB Atlas
         run: |
-          az webapp config appsettings set \
-            --name ${{ env.AZURE_WEBAPP_NAME }} \
+          az container create \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --settings WEBSITES_PORT=3001
+            --name sushi-api \
+            --image ${{ env.DOCKER_USERNAME }}/${{ env.API_IMAGE }}:latest \
+            --dns-name-label ztu-sushi-api \
+            --ports 3001 \
+            --os-type Linux \
+            --environment-variables \
+              PORT=3001 \
+              HOST=0.0.0.0 \
+              NODE_ENV=production \
+              MONGO_URL="${{ secrets.MONGODB_ATLAS_URL }}" \
+            --cpu 1 \
+            --memory 1 \
+            --location ${{ env.AZURE_LOCATION }}
 
-      - name: Restart Azure Web App
+      - name: Display API URL
         run: |
-          az webapp restart \
-            --name ${{ env.AZURE_WEBAPP_NAME }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+          API_FQDN=$(az container show \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name sushi-api \
+            --query ipAddress.fqdn \
+            --output tsv)
+          echo "✅ API deployed successfully!"
+          echo "🌐 API URL: http://$API_FQDN:3001"
+          echo "🔍 Health check: http://$API_FQDN:3001/health"

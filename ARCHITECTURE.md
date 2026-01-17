@@ -23,11 +23,11 @@
 
 | Компонент | Технології |
 |-----------|------------|
-| **Backend** | Node.js 18, Express.js, MongoDB, Mongoose |
+| **Backend** | Node.js 18, Express.js, MongoDB Atlas, Mongoose |
 | **Frontend** | React 18, Vite, React Router DOM |
 | **DevOps** | Docker, Docker Compose, GitHub Actions |
-| **Cloud** | Azure Web App, Azure Static Web Apps |
-| **Database** | MongoDB (локально + Docker) |
+| **Cloud** | Azure Container Instances, Azure App Service |
+| **Database** | MongoDB Atlas (Cloud) |
 
 ### Архітектурна діаграма
 

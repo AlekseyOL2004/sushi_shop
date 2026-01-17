@@ -55,24 +55,38 @@ app.use((err, req, res, next) => {
 // MongoDB connection and server start
 const startServer = async () => {
   try {
-    console.log("🔄 Connecting to MongoDB...");
-    console.log("   URL:", MONGO_URL.replace(/\/\/([^:]+):([^@]+)@/, "//$1:****@")); // Hide password in logs
+    console.log("🔧 Configuration loaded:");
+    console.log("   PORT:", PORT);
+    console.log("   HOST:", HOST);
+    console.log("   MONGO_URL:", MONGO_URL.replace(/\/\/([^:]+):([^@]+)@/, "//$1:****@")); // Hide password
 
+    console.log("🔄 Connecting to MongoDB...");
+    
     await mongoose.connect(MONGO_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
     });
 
-    console.log("MongoDB connected successfully");
+    console.log("✅ MongoDB connected successfully");
     console.log("   Database:", mongoose.connection.name);
 
     app.listen(PORT, HOST, () => {
-      console.log(`API Server running on http://${HOST}:${PORT}`);
+      console.log(`✅ API Server running on http://${HOST}:${PORT}`);
       console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
       console.log(`   Health check: http://${HOST}:${PORT}/health`);
     });
   } catch (error) {
-    console.error("Failed to connect to MongoDB:", error.message);
+    console.error("❌ Failed to connect to MongoDB:");
+    console.error("   Error:", error.message);
+    console.error("   MONGO_URL:", MONGO_URL.replace(/\/\/([^:]+):([^@]+)@/, "//$1:****@"));
+    
+    if (error.name === 'MongoServerError') {
+      console.error("   Auth failed. Check username/password");
+    } else if (error.name === 'MongoNetworkError') {
+      console.error("   Network error. Check MongoDB IP and port");
+    }
+    
     console.error("   Full error:", error);
     process.exit(1);
   }
@@ -99,6 +113,9 @@ process.on("SIGINT", async () => {
   process.exit(0);
 });
 
-startServer();
+// Викликати startServer тільки якщо файл запускається напряму
+if (require.main === module) {
+  startServer();
+}
 
-module.exports = app;
+module.exports = { app, startServer };
