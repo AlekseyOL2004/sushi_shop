@@ -23,5 +23,6 @@ services:
       HOST: "0.0.0.0"
       # Використовуємо ім'я сервісу 'api_db' для підключення
       MONGO_URL: "mongodb://admin:SecurePassword123@api_db:27017/sushi_shop?authSource=admin"
+      WEBSITES_PORT: "3001"
     depends_on:
       - api_db

@@ -366,6 +366,12 @@ az webapp create  --resource-group sushi-project-rg  --plan sushi-plan  --name z
 
 az webapp config appsettings set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --settings WEBSITES_PORT=80
 
+az webapp config container set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --multicontainer-config-type compose  --multicontainer-config-file docker-compose.azure.yml
+
+az webapp config appsettings set  --name ztu-sushi-backend  --resource-group sushi-project-rg  --settings WEBSITES_PORT=3001
+
+az webapp restart  --name ztu-sushi-backend  --resource-group sushi-project-rg
+
 
 **Рішення:**
 ```powershell

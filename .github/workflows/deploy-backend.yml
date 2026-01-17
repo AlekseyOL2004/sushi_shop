@@ -54,6 +54,13 @@ jobs:
             --multicontainer-config-type compose \
             --multicontainer-config-file docker-compose.azure.yml
 
+      - name: Configure port settings
+        run: |
+          az webapp config appsettings set \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --settings WEBSITES_PORT=3001
+
       - name: Restart Azure Web App
         run: |
           az webapp restart \
